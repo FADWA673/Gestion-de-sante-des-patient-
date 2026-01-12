@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Mes Consultations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="notification" class="hidden fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px]"></div>
+
+    <!-- Sidebar Médecin -->
+    <aside class="w-64 bg-gradient-to-b from-green-800 to-green-900 text-white fixed left-0 top-0 h-screen overflow-y-auto">
+        <!-- En-tête Médecin -->
+        <div class="p-6 border-b border-white border-opacity-10">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-3 rounded-2xl shadow-lg">
+                    <svg class="text-green-600" width="28" height="28" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Espace Médecin</h1>
+                    <p class="text-xs text-green-200 mt-0.5 font-medium">Dr. salma hmirin</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Médecin -->
+        <nav class="p-4 space-y-2">
+            <a href="#" onclick="showSection('dashboard')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+                <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                </div>
+                <span>Tableau de Bord</span>
+            </a>
+
+            <a href="#" onclick="showSection('rendezvous')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+                <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/>
+                    </svg>
+                </div>
+                <span>Mes Rendez-vous</span>
+            </a>
+
+            <a href="#" onclick="showSection('consultations')" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+                <div class="w-8 h-8 rounded-lg bg-white bg-opacity-20 flex items-center justify-center">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                </div>
+                <span>Mes Consultations</span>
+            </a>
+
+            <a href="#" onclick="showSection('patients')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+                <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+                <span>Mes Patients</span>
+            </a>
+
+            <!-- Déconnexion -->
+            <div class="pt-6 mt-6 border-t border-white border-opacity-10">
+                <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-red-200 hover:bg-red-500 hover:bg-opacity-20">
+                    <div class="w-8 h-8 rounded-lg bg-red-500 bg-opacity-20 flex items-center justify-center">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                        </svg>
+                    </div>
+                    <span>Déconnexion</span>
+                </button>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="ml-64 min-h-screen">
+        <!-- Section Dashboard -->
+        <div id="dashboard-section" class="section">
+            <header class="bg-gradient-to-r from-green-800 to-green-900 border-b border-green-700 px-8 py-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">Tableau de Bord Médecin</h1>
+                        <p class="text-green-200 mt-1 font-medium">Vue d'ensemble de votre activité médicale</p>
+                    </div>
+                    <button onclick="loadDashboardData()" class="bg-white text-green-800 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 shadow-lg">
+                        Actualiser
+                    </button>
+                </div>
+            </header>
+
+            <main class="p-8 bg-gradient-to-br from-green-50 to-emerald-50 min-h-screen">
+                <!-- Statistiques Dashboard -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Mes Patients</p>
+                                <h3 id="dashboardPatientCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                                <p class="text-sm text-blue-600 mt-2">• Suivis</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
+                                <svg class="text-blue-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Mes Consultations</p>
+                                <h3 id="dashboardConsultationCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                                <p class="text-sm text-green-600 mt-2">• Effectuées</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center">
+                                <svg class="text-green-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Avec Diagnostic</p>
+                                <h3 id="dashboardDiagnosticCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                                <p class="text-sm text-purple-600 mt-2">• Diagnostics</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center">
+                                <svg class="text-purple-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Ce Mois</p>
+                                <h3 id="dashboardMonthCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                                <p class="text-sm text-orange-600 mt-2">• Consultations</p>
+                            </div>
+                            <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center">
+                                <svg class="text-orange-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions Rapides Dashboard -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Actions Rapides</h3>
+                        <div class="space-y-3">
+                            <button onclick="openModal()" class="w-full bg-green-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-green-700 transition flex items-center gap-2">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                                </svg>
+                                Nouvelle Consultation
+                            </button>
+                            <button onclick="showSection('patients')" class="w-full bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-blue-700 transition flex items-center gap-2">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                                Voir Mes Patients
+                            </button>
+                            <button onclick="showSection('consultations')" class="w-full bg-purple-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-purple-700 transition flex items-center gap-2">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                                </svg>
+                                Gérer Consultations
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Patients Récents</h3>
+                        <div id="dashboardRecentPatients" class="space-y-3">
+                            <div class="text-center py-4">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                                <p class="text-gray-500 mt-2 text-sm">Chargement...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consultations Récentes Dashboard -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Consultations Récentes</h3>
+                    <div id="dashboardRecentConsultations">
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+                            <p class="text-gray-500 mt-4">Chargement des consultations...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Section Consultations (existante) -->
+        <div id="consultations-section" class="section active">
+            <header class="bg-gradient-to-r from-green-800 to-green-900 border-b border-green-700 px-8 py-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">Mes Consultations</h1>
+                        <p class="text-green-200 mt-1 font-medium">Gérer vos consultations médicales</p>
+                    </div>
+                    <button onclick="openModal()" class="bg-white text-green-800 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                        </svg>
+                        Nouvelle Consultation
+                    </button>
+                </div>
+            </header>
+
+            <main class="p-8">
+            <!-- Statistiques -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total Consultations</p>
+                            <h3 id="consultationCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                            <svg class="text-green-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Patients Consultés</p>
+                            <h3 id="patientsUniques" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                            <svg class="text-blue-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Avec Diagnostic</p>
+                            <h3 id="avecDiagnostic" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                            <svg class="text-purple-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barre de recherche -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                <div class="flex gap-4">
+                    <div class="flex-1 relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg class="text-gray-400" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                        </div>
+                        <input type="text" id="searchInput" placeholder="Rechercher une consultation..." 
+                               class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <button onclick="searchConsultations()" class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition">
+                        Rechercher
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tableau des Consultations -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900">Liste de Mes Consultations</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Heure</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motif</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Détails Médicaux</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="consultationsTable" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                    <div id="noConsultations" class="hidden text-center py-20">
+                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg class="text-gray-400" width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucune consultation trouvée</h3>
+                        <p class="text-gray-500 mb-6">Commencez par enregistrer votre première consultation</p>
+                        <button onclick="openModal()" class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition shadow-lg">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                            Ajouter une consultation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Section Patients -->
+    <div id="patients-section" class="section">
+        <header class="bg-gradient-to-r from-green-800 to-green-900 border-b border-green-700 px-8 py-6 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-white">Mes Patients</h1>
+                    <p class="text-green-200 mt-1 font-medium">Gestion de vos patients</p>
+                </div>
+                <button onclick="loadPatients()" class="bg-white text-green-800 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 shadow-lg">
+                    Actualiser
+                </button>
+            </div>
+        </header>
+
+        <main class="p-8 bg-gradient-to-br from-green-50 to-emerald-50 min-h-screen">
+            <!-- Statistiques Patients -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total Patients</p>
+                            <h3 id="totalPatientsCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                            <svg class="text-blue-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Avec Consultations</p>
+                            <h3 id="patientsWithConsultations" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                            <svg class="text-green-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Nouveaux ce Mois</p>
+                            <h3 id="newPatientsThisMonth" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                            <svg class="text-purple-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barre de recherche patients -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                <div class="flex gap-4">
+                    <div class="flex-1 relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg class="text-gray-400" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                        </div>
+                        <input type="text" id="searchPatientsInput" placeholder="Rechercher un patient..." 
+                               class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <button onclick="searchPatients()" class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition">
+                        Rechercher
+                    </button>
+                </div>
+            </div>
+
+            <!-- Liste des Patients -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900">Liste de Mes Patients</h3>
+                </div>
+                <div id="patientsList" class="p-6">
+                    <div class="text-center py-8">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+                        <p class="text-gray-500 mt-4">Chargement des patients...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Section Rendez-vous -->
+    <div id="rendezvous-section" class="section">
+        <header class="bg-gradient-to-r from-green-800 to-green-900 border-b border-green-700 px-8 py-6 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-white">Mes Rendez-vous</h1>
+                    <p class="text-green-200 mt-1 font-medium">Gestion de vos rendez-vous confirmés</p>
+                </div>
+                <button onclick="loadRendezVous()" class="bg-white text-green-800 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 shadow-lg">
+                    🔄 Actualiser
+                </button>
+            </div>
+        </header>
+
+        <main class="p-8 bg-gradient-to-br from-green-50 to-emerald-50 min-h-screen">
+            <!-- Statistiques Rendez-vous -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total</p>
+                            <h3 id="rdvTotalCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                            <svg class="text-blue-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Confirmés</p>
+                            <h3 id="rdvConfirmedCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                            <svg class="text-green-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">En Attente</p>
+                            <h3 id="rdvPendingCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
+                            <svg class="text-orange-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Aujourd'hui</p>
+                            <h3 id="rdvTodayCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                            <svg class="text-purple-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 8V6h1.5v6H12z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des Rendez-vous -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900">Mes Rendez-vous Confirmés</h3>
+                </div>
+                <div id="rendezVousList" class="p-6">
+                    <div class="text-center py-8">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+                        <p class="text-gray-500 mt-4">Chargement des rendez-vous...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+    <!-- Modal Consultation -->
+    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto">
+            <!-- Header du Modal -->
+            <div class="px-8 py-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">Nouvelle Consultation</h2>
+                        <p class="text-gray-600 mt-1">Remplissez les informations de la consultation</p>
+                    </div>
+                    <button onclick="closeModal()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenu du Modal -->
+            <div class="px-8 py-6 space-y-6">
+                <input type="hidden" id="consultationId">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            Patient <span class="text-red-500">*</span>
+                        </label>
+                        <select id="patientId" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Sélectionnez un patient...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            Date et Heure de la Consultation <span class="text-red-500">*</span>
+                        </label>
+                        <input type="datetime-local" id="date" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">
+                        Motif de Consultation <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="motif" rows="3" required 
+                              placeholder="Décrivez le motif de la consultation..." 
+                              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            Diagnostic
+                        </label>
+                        <textarea id="diagnostic" rows="4" 
+                                  placeholder="Diagnostic médical établi..." 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            Traitement Prescrit
+                        </label>
+                        <textarea id="traitement" rows="4" 
+                                  placeholder="Médicaments prescrits et posologie..." 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"></textarea>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">
+                        <span class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+                            </svg>
+                            Ordonnance médicale
+                        </span>
+                    </label>
+                    <textarea id="ordonnance" rows="4" 
+                              placeholder="Détails de l'ordonnance médicale (médicaments, posologie, durée du traitement)..." 
+                              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"></textarea>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                        Exemple: Paracétamol 1g - 1 comprimé 3 fois par jour pendant 5 jours
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">
+                        Notes Complémentaires
+                    </label>
+                    <textarea id="notes" rows="3" 
+                              placeholder="Observations particulières, recommandations..." 
+                              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"></textarea>
+                </div>
+            </div>
+
+            <!-- Footer du Modal -->
+            <div class="px-8 py-6 border-t border-gray-200 flex gap-4">
+                <button onclick="closeModal()" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-semibold">
+                    Annuler
+                </button>
+                <button onclick="saveConsultation()" class="flex-1 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition font-semibold">
+                    Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MEDECIN_ID = 'f8ed993a-f7fd-4e89-a66e-2cd7ca5d8391';
+        let currentConsultationId = null;
+        let patients = [];
+        let allConsultations = [];
+        let allPatients = [];
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            notification.className = `fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px] ${colors[type]}`;
+            notification.textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
+
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                localStorage.removeItem('isAuthenticated');
+                localStorage.removeItem('user');
+                window.location.href = '/medecin-login.html';
+            }
+        }
+
+        // Navigation entre sections
+        function showSection(sectionName) {
+            // Masquer toutes les sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+                section.style.display = 'none';
+            });
+            
+            // Afficher la section demandée
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.classList.add('active');
+                targetSection.style.display = 'block';
+            }
+            
+            // Mettre à jour la navigation
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Marquer le lien actif
+            const activeLink = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            // Charger le contenu de la section
+            if (sectionName === 'dashboard') {
+                loadDashboardData();
+            } else if (sectionName === 'consultations') {
+                loadConsultations();
+                loadPatientsForSelect(); // Charger les patients pour le modal
+            } else if (sectionName === 'patients') {
+                loadPatients();
+            } else if (sectionName === 'rendezvous') {
+                loadRendezVous();
+            }
+        }
+
+        // Charger les données du dashboard
+        async function loadDashboardData() {
+            console.log('🔄 DASHBOARD - Chargement des données...');
+            
+            try {
+                // Charger toutes les données depuis l'admin
+                const [consultationsRes, patientsRes] = await Promise.all([
+                    fetch('/api/consultations'),
+                    fetch('/api/patients')
+                ]);
+                
+                console.log('📡 Réponses API Dashboard:', consultationsRes.status, patientsRes.status);
+                
+                const consultationsData = await consultationsRes.json();
+                const patientsData = await patientsRes.json();
+                
+                console.log('📊 Données Dashboard reçues:', {
+                    consultations: consultationsData.success ? consultationsData.data?.length : 'ERROR',
+                    patients: patientsData.success ? patientsData.data?.length : 'ERROR'
+                });
+                
+                if (consultationsData.success && patientsData.success) {
+                    const allConsultations = consultationsData.data || [];
+                    const allPatients = patientsData.data || [];
+                    
+                    // Filtrer les consultations du médecin
+                    const mesConsultations = allConsultations.filter(c => 
+                        c.medecin && c.medecin.id === MEDECIN_ID
+                    );
+                    
+                    console.log(`👨‍⚕️ DASHBOARD - Mes consultations: ${mesConsultations.length} sur ${allConsultations.length} total`);
+                    
+                    // Calculer les statistiques
+                    const uniquePatients = [...new Set(mesConsultations.map(c => c.patient?.id))].filter(id => id).length;
+                    const withDiagnostic = mesConsultations.filter(c => c.consultation?.diagnostic && c.consultation.diagnostic.trim()).length;
+                    
+                    // Consultations de ce mois
+                    const currentMonth = new Date().getMonth();
+                    const currentYear = new Date().getFullYear();
+                    const thisMonthConsultations = mesConsultations.filter(c => {
+                        const consultDate = new Date(c.consultation?.date);
+                        return consultDate.getMonth() === currentMonth && consultDate.getFullYear() === currentYear;
+                    }).length;
+                    
+                    console.log(`📈 DASHBOARD Stats: Patients=${uniquePatients}, Consultations=${mesConsultations.length}, Diagnostic=${withDiagnostic}, Mois=${thisMonthConsultations}`);
+                    
+                    // Mettre à jour les statistiques
+                    const patientCountEl = document.getElementById('dashboardPatientCount');
+                    const consultationCountEl = document.getElementById('dashboardConsultationCount');
+                    const diagnosticCountEl = document.getElementById('dashboardDiagnosticCount');
+                    const monthCountEl = document.getElementById('dashboardMonthCount');
+                    
+                    if (patientCountEl) patientCountEl.textContent = uniquePatients;
+                    if (consultationCountEl) consultationCountEl.textContent = mesConsultations.length;
+                    if (diagnosticCountEl) diagnosticCountEl.textContent = withDiagnostic;
+                    if (monthCountEl) monthCountEl.textContent = thisMonthConsultations;
+                    
+                    // Afficher les patients récents (derniers patients avec consultations)
+                    displayDashboardRecentPatients(mesConsultations.slice(0, 5));
+                    
+                    // Afficher les consultations récentes
+                    displayDashboardRecentConsultations(mesConsultations.slice(0, 5));
+                    
+                    showNotification('✅ Dashboard actualisé', 'success');
+                } else {
+                    console.error('❌ Erreur Dashboard APIs:', { consultationsData, patientsData });
+                    showNotification('❌ Erreur de chargement des données', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Erreur Dashboard:', error);
+                showNotification('❌ Erreur de connexion', 'error');
+            }
+        }
+
+        // Afficher les patients récents dans le dashboard
+        function displayDashboardRecentPatients(consultations) {
+            const container = document.getElementById('dashboardRecentPatients');
+            
+            if (consultations.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm">Aucun patient récent</p>';
+                return;
+            }
+            
+            const uniquePatients = [];
+            const seenPatients = new Set();
+            
+            consultations.forEach(c => {
+                if (c.patient && !seenPatients.has(c.patient.id)) {
+                    uniquePatients.push(c.patient);
+                    seenPatients.add(c.patient.id);
+                }
+            });
+            
+            container.innerHTML = uniquePatients.slice(0, 3).map(patient => `
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <span class="text-sm font-bold text-green-600">${patient.prenom[0]}${patient.nom[0]}</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900 text-sm">${patient.prenom} ${patient.nom}</p>
+                        <p class="text-xs text-gray-600">${patient.email || 'Email non renseigné'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Afficher les consultations récentes dans le dashboard
+        function displayDashboardRecentConsultations(consultations) {
+            const container = document.getElementById('dashboardRecentConsultations');
+            
+            if (consultations.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">Aucune consultation récente</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="space-y-3">
+                    ${consultations.map(c => {
+                        const date = new Date(c.consultation?.date || Date.now());
+                        const dateStr = date.toLocaleDateString('fr-FR');
+                        
+                        return `
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <span class="text-xs font-bold text-blue-600">${c.patient?.prenom[0] || '?'}${c.patient?.nom[0] || '?'}</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900 text-sm">${c.patient?.prenom || ''} ${c.patient?.nom || ''}</p>
+                                        <p class="text-xs text-gray-600">${dateStr}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs text-gray-700 max-w-32 truncate">${c.consultation?.motif || 'Motif non renseigné'}</p>
+                                    ${c.consultation?.diagnostic ? '<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Diagnostic</span>' : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Charger les patients depuis l'admin
+        async function loadPatients() {
+            console.log('🔄 PATIENTS - Chargement depuis admin...');
+            
+            try {
+                const response = await fetch('/api/patients');
+                console.log('📡 Réponse API Patients:', response.status);
+                
+                const result = await response.json();
+                console.log('📊 Données Patients reçues:', result);
+                
+                if (result.success) {
+                    allPatients = result.data || [];
+                    console.log(`👥 PATIENTS - Total chargés: ${allPatients.length}`);
+                    
+                    // Récupérer aussi les consultations pour les statistiques
+                    const consultationsRes = await fetch('/api/consultations');
+                    const consultationsData = await consultationsRes.json();
+                    
+                    if (consultationsData.success) {
+                        const allConsultations = consultationsData.data || [];
+                        const mesConsultations = allConsultations.filter(c => 
+                            c.medecin && c.medecin.id === MEDECIN_ID
+                        );
+                        
+                        console.log(`📋 PATIENTS - Mes consultations: ${mesConsultations.length}`);
+                        
+                        // Calculer les statistiques patients
+                        const patientsWithConsultations = [...new Set(mesConsultations.map(c => c.patient?.id))].filter(id => id).length;
+                        
+                        // Nouveaux patients ce mois (basé sur la date de création si disponible)
+                        const currentMonth = new Date().getMonth();
+                        const currentYear = new Date().getFullYear();
+                        const newThisMonth = allPatients.filter(p => {
+                            if (p.dateCreation) {
+                                const createDate = new Date(p.dateCreation);
+                                return createDate.getMonth() === currentMonth && createDate.getFullYear() === currentYear;
+                            }
+                            return false;
+                        }).length;
+                        
+                        console.log(`📈 PATIENTS Stats: Total=${allPatients.length}, AvecConsultations=${patientsWithConsultations}, NouveauxMois=${newThisMonth}`);
+                        
+                        // Mettre à jour les statistiques
+                        const totalEl = document.getElementById('totalPatientsCount');
+                        const withConsultEl = document.getElementById('patientsWithConsultations');
+                        const newMonthEl = document.getElementById('newPatientsThisMonth');
+                        
+                        if (totalEl) totalEl.textContent = allPatients.length;
+                        if (withConsultEl) withConsultEl.textContent = patientsWithConsultations;
+                        if (newMonthEl) newMonthEl.textContent = newThisMonth;
+                    }
+                    
+                    displayPatients(allPatients);
+                    showNotification('✅ Patients chargés depuis admin', 'success');
+                } else {
+                    console.error('❌ Erreur API Patients:', result);
+                    showNotification('❌ Erreur de chargement des patients', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Erreur Patients:', error);
+                showNotification('❌ Erreur de connexion', 'error');
+            }
+        }
+
+        // Afficher la liste des patients
+        function displayPatients(patients) {
+            const container = document.getElementById('patientsList');
+            
+            if (patients.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                        </svg>
+                        <h3 class="mt-4 text-lg font-medium text-gray-900">Aucun patient trouvé</h3>
+                        <p class="mt-2 text-gray-500">Aucun patient n'est enregistré dans le système.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    ${patients.map(patient => `
+                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                    <span class="text-lg font-bold text-green-600">${patient.prenom[0]}${patient.nom[0]}</span>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-gray-900">${patient.prenom} ${patient.nom}</h3>
+                                    <p class="text-sm text-gray-600">${patient.email || 'Email non renseigné'}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2 mb-4">
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                                    </svg>
+                                    <span>${patient.telephone || 'Téléphone non renseigné'}</span>
+                                </div>
+                                
+                                ${patient.dateNaissance ? `
+                                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/>
+                                        </svg>
+                                        <span>${new Date(patient.dateNaissance).toLocaleDateString('fr-FR')}</span>
+                                    </div>
+                                ` : ''}
+                                
+                                ${patient.adresse ? `
+                                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                        </svg>
+                                        <span class="truncate">${patient.adresse}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button onclick="createConsultationForPatient('${patient.id}')" 
+                                        class="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">
+                                    Consultation
+                                </button>
+                                <button onclick="viewPatientHistory('${patient.id}')" 
+                                        class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                                    Historique
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Rechercher des patients
+        function searchPatients() {
+            const searchTerm = document.getElementById('searchPatientsInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                displayPatients(allPatients);
+                return;
+            }
+
+            const filtered = allPatients.filter(patient => {
+                const fullName = `${patient.prenom} ${patient.nom}`.toLowerCase();
+                const email = (patient.email || '').toLowerCase();
+                const telephone = (patient.telephone || '').toLowerCase();
+                
+                return fullName.includes(searchTerm) || 
+                       email.includes(searchTerm) || 
+                       telephone.includes(searchTerm);
+            });
+
+            displayPatients(filtered);
+            showNotification(`${filtered.length} patient(s) trouvé(s)`, 'info');
+        }
+
+        // Créer une consultation pour un patient spécifique
+        function createConsultationForPatient(patientId) {
+            openModal();
+            document.getElementById('patientId').value = patientId;
+        }
+
+        // Voir l'historique d'un patient
+        function viewPatientHistory(patientId) {
+            showSection('consultations');
+            // Filtrer les consultations pour ce patient
+            setTimeout(() => {
+                const patient = allPatients.find(p => p.id === patientId);
+                if (patient) {
+                    document.getElementById('searchInput').value = `${patient.prenom} ${patient.nom}`;
+                    searchConsultations();
+                }
+            }, 500);
+        }
+
+        // Charger les consultations
+        async function loadConsultations() {
+            console.log('🔄 CONSULTATIONS - Chargement depuis admin...');
+            
+            try {
+                const response = await fetch('/api/consultations');
+                console.log('📡 Réponse API Consultations:', response.status);
+                
+                const result = await response.json();
+                console.log('📊 Données Consultations reçues:', result);
+                
+                if (result.success) {
+                    const allConsultationsData = result.data || [];
+                    
+                    // Filtrer les consultations du médecin
+                    const mesConsultations = allConsultationsData.filter(c => 
+                        c.medecin && c.medecin.id === MEDECIN_ID
+                    );
+                    
+                    console.log(`📋 CONSULTATIONS - Mes consultations: ${mesConsultations.length} sur ${allConsultationsData.length} total`);
+                    
+                    allConsultations = mesConsultations; // Stocker pour la recherche
+                    displayConsultations(mesConsultations);
+                    updateStats(mesConsultations);
+                    showNotification('✅ Consultations chargées depuis admin', 'success');
+                } else {
+                    console.error('❌ Erreur API Consultations:', result);
+                    showNotification('❌ Erreur de chargement des consultations', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Erreur Consultations:', error);
+                showNotification('❌ Erreur de connexion', 'error');
+            }
+        }
+
+        // Charger les patients pour le select du modal
+        async function loadPatientsForSelect() {
+            console.log('🔄 PATIENTS SELECT - Chargement depuis admin...');
+            
+            try {
+                const response = await fetch('/api/patients');
+                console.log('📡 Réponse API Patients Select:', response.status);
+                
+                const result = await response.json();
+                console.log('📊 Données Patients Select reçues:', result);
+                
+                if (result.success) {
+                    patients = result.data || [];
+                    console.log(`👥 PATIENTS SELECT - Total chargés: ${patients.length}`);
+                    populatePatientSelect();
+                } else {
+                    console.error('❌ Erreur API Patients Select:', result);
+                }
+            } catch (error) {
+                console.error('❌ Erreur Patients Select:', error);
+            }
+        }
+
+        // Remplir le select des patients
+        function populatePatientSelect() {
+            const patientSelect = document.getElementById('patientId');
+            patientSelect.innerHTML = '<option value="">Sélectionnez un patient...</option>';
+            patients.forEach(p => {
+                patientSelect.innerHTML += `<option value="${p.id}">${p.nom} ${p.prenom}</option>`;
+            });
+        }
+
+        // Mettre à jour les statistiques
+        function updateStats(consultations) {
+            const total = consultations.length;
+            const uniquePatients = [...new Set(consultations.map(c => c.patient?.id))].filter(id => id).length;
+            const avecDiagnostic = consultations.filter(c => c.consultation?.diagnostic && c.consultation.diagnostic.trim()).length;
+            
+            document.getElementById('consultationCount').textContent = total;
+            document.getElementById('patientsUniques').textContent = uniquePatients;
+            document.getElementById('avecDiagnostic').textContent = avecDiagnostic;
+        }
+
+        // Afficher les consultations
+        function displayConsultations(consultations) {
+            const tbody = document.getElementById('consultationsTable');
+            const noConsultations = document.getElementById('noConsultations');
+            
+            if (consultations.length === 0) {
+                tbody.innerHTML = '';
+                noConsultations.classList.remove('hidden');
+                return;
+            }
+            
+            noConsultations.classList.add('hidden');
+            tbody.innerHTML = consultations.map(c => {
+                const date = new Date(c.consultation?.date || Date.now());
+                const dateStr = date.toLocaleDateString('fr-FR');
+                const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                
+                // Extraire l'ordonnance des notes
+                const notes = c.consultation?.notes || '';
+                const ordonnanceMatch = notes.match(/📋 ORDONNANCE:\n(.*?)(?:\n\n|$)/s);
+                const ordonnance = ordonnanceMatch ? ordonnanceMatch[1].trim() : '';
+                const notesWithoutOrdonnance = notes.replace(/📋 ORDONNANCE:\n.*?(?:\n\n|$)/s, '').trim();
+                
+                return `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-semibold text-gray-900">${dateStr}</div>
+                        <div class="text-xs text-gray-500">${timeStr}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-semibold text-gray-900">${c.patient?.nom || ''} ${c.patient?.prenom || ''}</div>
+                        <div class="text-xs text-gray-500">${c.patient?.email || 'Email non renseigné'}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-700 max-w-xs">
+                            <div class="truncate" title="${c.consultation?.motif || '-'}">${c.consultation?.motif || '-'}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-700 max-w-xs">
+                            ${c.consultation?.diagnostic ? `
+                                <div class="truncate mb-1" title="${c.consultation.diagnostic}">
+                                    <span class="font-medium">Diagnostic:</span> ${c.consultation.diagnostic}
+                                </div>
+                            ` : ''}
+                            ${c.consultation?.traitement ? `
+                                <div class="truncate mb-1" title="${c.consultation.traitement}">
+                                    <span class="font-medium">Traitement:</span> ${c.consultation.traitement}
+                                </div>
+                            ` : ''}
+                            ${ordonnance ? `
+                                <div class="truncate mb-1" title="${ordonnance}">
+                                    <span class="font-medium">Ordonnance:</span> ${ordonnance}
+                                </div>
+                            ` : ''}
+                            ${notesWithoutOrdonnance ? `
+                                <div class="truncate text-xs text-gray-500" title="${notesWithoutOrdonnance}">
+                                    Notes: ${notesWithoutOrdonnance}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex justify-center gap-2">
+                            <button onclick="editConsultation('${c.consultation?.id}')" 
+                                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" 
+                                    title="Modifier">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button onclick="deleteConsultation('${c.consultation?.id}')" 
+                                    class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" 
+                                    title="Supprimer">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        // Ouvrir le modal
+        function openModal() {
+            currentConsultationId = null;
+            document.getElementById('modalTitle').textContent = 'Nouvelle Consultation';
+            document.getElementById('consultationId').value = '';
+            document.getElementById('patientId').value = '';
+            document.getElementById('date').value = '';
+            document.getElementById('motif').value = '';
+            document.getElementById('diagnostic').value = '';
+            document.getElementById('traitement').value = '';
+            document.getElementById('ordonnance').value = '';
+            document.getElementById('notes').value = '';
+            
+            // Définir la date actuelle par défaut
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('date').value = now.toISOString().slice(0, 16);
+            
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        // Fermer le modal
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        // Sauvegarder la consultation
+        async function saveConsultation() {
+            const data = {
+                medecinId: MEDECIN_ID,
+                patientId: document.getElementById('patientId').value,
+                date: document.getElementById('date').value,
+                motif: document.getElementById('motif').value,
+                diagnostic: document.getElementById('diagnostic').value,
+                traitement: document.getElementById('traitement').value,
+                notes: document.getElementById('notes').value,
+                statut: 'terminee'
+            };
+
+            // Ajouter l'ordonnance aux notes si elle existe
+            const ordonnance = document.getElementById('ordonnance').value;
+            if (ordonnance.trim()) {
+                data.notes = data.notes ? `${data.notes}\n\n📋 ORDONNANCE:\n${ordonnance}` : `📋 ORDONNANCE:\n${ordonnance}`;
+            }
+
+            if (!data.patientId || !data.date || !data.motif) {
+                showNotification('Veuillez remplir tous les champs obligatoires (Patient, Date, Motif)', 'error');
+                return;
+            }
+
+            try {
+                const url = currentConsultationId ? 
+                    `/api/consultations/${currentConsultationId}` : 
+                    '/api/consultations';
+                const method = currentConsultationId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(currentConsultationId ? 'Consultation modifiée avec succès' : 'Consultation créée avec succès', 'success');
+                    closeModal();
+                    loadConsultations();
+                } else {
+                    showNotification(result.message || 'Erreur lors de l\'enregistrement', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur de connexion', 'error');
+            }
+        }
+
+        // Modifier une consultation
+        async function editConsultation(id) {
+            try {
+                const response = await fetch(`/api/consultations/${id}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const c = result.data;
+                    currentConsultationId = id;
+                    
+                    document.getElementById('modalTitle').textContent = 'Modifier la Consultation';
+                    document.getElementById('consultationId').value = id;
+                    document.getElementById('patientId').value = c.patient?.id || '';
+                    
+                    // Convertir la date au format datetime-local
+                    const date = new Date(c.consultation.date);
+                    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                    document.getElementById('date').value = date.toISOString().slice(0, 16);
+                    
+                    document.getElementById('motif').value = c.consultation.motif || '';
+                    document.getElementById('diagnostic').value = c.consultation.diagnostic || '';
+                    document.getElementById('traitement').value = c.consultation.traitement || '';
+                    
+                    // Extraire l'ordonnance des notes
+                    const notes = c.consultation.notes || '';
+                    const ordonnanceMatch = notes.match(/📋 ORDONNANCE:\n(.*?)(?:\n\n|$)/s);
+                    const ordonnance = ordonnanceMatch ? ordonnanceMatch[1].trim() : '';
+                    const notesWithoutOrdonnance = notes.replace(/📋 ORDONNANCE:\n.*?(?:\n\n|$)/s, '').trim();
+                    
+                    document.getElementById('ordonnance').value = ordonnance;
+                    document.getElementById('notes').value = notesWithoutOrdonnance;
+                    
+                    document.getElementById('modal').classList.remove('hidden');
+                } else {
+                    showNotification('Consultation non trouvée', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur lors du chargement de la consultation', 'error');
+            }
+        }
+
+        // Supprimer une consultation
+        async function deleteConsultation(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette consultation ?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/consultations/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Consultation supprimée avec succès', 'success');
+                    loadConsultations();
+                } else {
+                    showNotification(result.message || 'Erreur lors de la suppression', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur de connexion', 'error');
+            }
+        }
+
+        // Rechercher des consultations
+        function searchConsultations() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                displayConsultations(allConsultations);
+                return;
+            }
+
+            const filtered = allConsultations.filter(c => {
+                const patient = `${c.patient?.prenom || ''} ${c.patient?.nom || ''}`.toLowerCase();
+                const motif = (c.consultation?.motif || '').toLowerCase();
+                const diagnostic = (c.consultation?.diagnostic || '').toLowerCase();
+                const traitement = (c.consultation?.traitement || '').toLowerCase();
+                
+                return patient.includes(searchTerm) || 
+                       motif.includes(searchTerm) || 
+                       diagnostic.includes(searchTerm) || 
+                       traitement.includes(searchTerm);
+            });
+
+            displayConsultations(filtered);
+            showNotification(`${filtered.length} consultation(s) trouvée(s)`, 'info');
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initialisation interface médecin');
+            
+            // Vérifier l'URL pour la section à afficher
+            const hash = window.location.hash.substring(1);
+            if (hash === 'rendezvous') {
+                showSection('rendezvous');
+            } else {
+                // Afficher la section consultations par défaut
+                showSection('consultations');
+            }
+            
+            console.log('✅ Interface médecin initialisée');
+        });
+
+        // Charger les rendez-vous
+        async function loadRendezVous() {
+            console.log('🔄 DEBUT - Chargement des rendez-vous pour médecin:', MEDECIN_ID);
+            
+            try {
+                const response = await fetch('/api/rendezvous');
+                console.log('📡 Réponse API RDV:', response.status, response.statusText);
+                
+                const result = await response.json();
+                console.log('📊 Données RDV reçues:', result);
+                
+                if (result.success && result.data) {
+                    // Filtrer les RDV du médecin
+                    const mesRdv = result.data.filter(rdv => 
+                        rdv.medecin && rdv.medecin.id === MEDECIN_ID
+                    );
+                    
+                    console.log(`👨‍⚕️ FILTRAGE - Mes RDV trouvés: ${mesRdv.length} sur ${result.data.length} total`);
+                    
+                    // Calculer les statistiques
+                    const today = new Date().toISOString().split('T')[0];
+                    const confirmedRdv = mesRdv.filter(rdv => rdv.statut === 'Confirmé').length;
+                    const pendingRdv = mesRdv.filter(rdv => rdv.statut === 'En attente').length;
+                    const todayRdv = mesRdv.filter(rdv => rdv.date === today).length;
+                    
+                    console.log(`📈 STATS - Total=${mesRdv.length}, Confirmés=${confirmedRdv}, Attente=${pendingRdv}, Aujourd'hui=${todayRdv}`);
+                    
+                    // Mettre à jour les statistiques avec vérification
+                    const totalElement = document.getElementById('rdvTotalCount');
+                    const confirmedElement = document.getElementById('rdvConfirmedCount');
+                    const pendingElement = document.getElementById('rdvPendingCount');
+                    const todayElement = document.getElementById('rdvTodayCount');
+                    
+                    if (totalElement) {
+                        totalElement.textContent = mesRdv.length;
+                        console.log('✅ Total mis à jour:', mesRdv.length);
+                    } else {
+                        console.error('❌ Element rdvTotalCount non trouvé');
+                    }
+                    
+                    if (confirmedElement) {
+                        confirmedElement.textContent = confirmedRdv;
+                        console.log('✅ Confirmés mis à jour:', confirmedRdv);
+                    } else {
+                        console.error('❌ Element rdvConfirmedCount non trouvé');
+                    }
+                    
+                    if (pendingElement) {
+                        pendingElement.textContent = pendingRdv;
+                        console.log('✅ En attente mis à jour:', pendingRdv);
+                    } else {
+                        console.error('❌ Element rdvPendingCount non trouvé');
+                    }
+                    
+                    if (todayElement) {
+                        todayElement.textContent = todayRdv;
+                        console.log('✅ Aujourd\'hui mis à jour:', todayRdv);
+                    } else {
+                        console.error('❌ Element rdvTodayCount non trouvé');
+                    }
+                    
+                    // Afficher la liste
+                    displayRendezVousSimple(mesRdv);
+                    showNotification('✅ Rendez-vous chargés avec succès', 'success');
+                    
+                } else {
+                    console.error('❌ Erreur dans la réponse API:', result);
+                    showNotification('❌ Erreur de chargement des rendez-vous', 'error');
+                    const listElement = document.getElementById('rendezVousList');
+                    if (listElement) {
+                        listElement.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Erreur de chargement</p></div>';
+                    }
+                }
+            } catch (error) {
+                console.error('❌ ERREUR COMPLETE:', error);
+                showNotification('❌ Erreur de connexion', 'error');
+                const listElement = document.getElementById('rendezVousList');
+                if (listElement) {
+                    listElement.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Erreur de connexion</p></div>';
+                }
+            }
+        }
+
+        // Afficher la liste des rendez-vous (version simplifiée)
+        function displayRendezVousSimple(rendezVous) {
+            console.log('📋 AFFICHAGE - Début affichage de', rendezVous.length, 'RDV');
+            
+            const container = document.getElementById('rendezVousList');
+            if (!container) {
+                console.error('❌ Container rendezVousList non trouvé');
+                return;
+            }
+            
+            if (rendezVous.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">📅</div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucun rendez-vous</h3>
+                        <p class="text-gray-500">Vous n'avez pas de rendez-vous programmés.</p>
+                    </div>
+                `;
+                console.log('📋 Affichage: Aucun RDV');
+                return;
+            }
+            
+            // Séparer par statut et trier par date
+            const confirmes = rendezVous.filter(rdv => rdv.statut === 'Confirmé').sort((a, b) => new Date(a.date) - new Date(b.date));
+            const enAttente = rendezVous.filter(rdv => rdv.statut === 'En attente').sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            console.log(`📋 SEPARATION - Confirmés: ${confirmes.length}, En attente: ${enAttente.length}`);
+            
+            let html = '<div class="space-y-6">';
+            
+            // RDV Confirmés
+            if (confirmes.length > 0) {
+                html += `
+                    <div>
+                        <h4 class="text-lg font-semibold text-green-700 mb-4 flex items-center gap-2">
+                            ✅ Rendez-vous Confirmés (${confirmes.length})
+                        </h4>
+                        <div class="space-y-3">
+                            ${confirmes.map(rdv => creerCarteRdvSimple(rdv, 'confirme')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // RDV En attente
+            if (enAttente.length > 0) {
+                html += `
+                    <div>
+                        <h4 class="text-lg font-semibold text-yellow-700 mb-4 flex items-center gap-2">
+                            ⏳ En attente de confirmation (${enAttente.length})
+                        </h4>
+                        <div class="space-y-3">
+                            ${enAttente.map(rdv => creerCarteRdvSimple(rdv, 'attente')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+            
+            console.log(`📋 TERMINE - Affichage de ${rendezVous.length} RDV (${confirmes.length} confirmés, ${enAttente.length} en attente)`);
+        }
+        
+        // Créer une carte de rendez-vous (version simplifiée)
+        function creerCarteRdvSimple(rdv, type) {
+            const rdvDate = new Date(rdv.date);
+            const today = new Date();
+            const isToday = rdvDate.toDateString() === today.toDateString();
+            
+            const couleurs = {
+                'confirme': 'border-green-200 bg-green-50',
+                'attente': 'border-yellow-200 bg-yellow-50'
+            };
+            
+            return `
+                <div class="flex items-center justify-between p-4 rounded-lg border-2 ${couleurs[type]} transition-all hover:shadow-md">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 ${type === 'confirme' ? 'bg-green-200' : 'bg-yellow-200'} rounded-full flex items-center justify-center">
+                            <span class="text-lg font-bold ${type === 'confirme' ? 'text-green-700' : 'text-yellow-700'}">
+                                ${rdv.patient?.prenom?.[0] || '?'}${rdv.patient?.nom?.[0] || '?'}
+                            </span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">
+                                ${rdv.patient?.prenom || ''} ${rdv.patient?.nom || ''}
+                                ${isToday ? ' 🔥 AUJOURD\'HUI' : ''}
+                            </h3>
+                            <p class="text-sm text-gray-600">📧 ${rdv.patient?.email || 'Email non renseigné'}</p>
+                            <p class="text-sm text-gray-600">📝 ${rdv.motif || 'Pas de motif'}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-sm font-medium text-gray-900">📅 ${rdv.date}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-sm font-medium text-gray-900">🕐 ${rdv.heure}</span>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium ${
+                            type === 'confirme' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }">
+                            ${rdv.statut}
+                        </span>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2">
+                        ${type === 'confirme' ? `
+                            <button onclick="commencerConsultationRdv('${rdv.patient?.id}')" 
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                                🩺 Consultation
+                            </button>
+                        ` : ''}
+                        ${type === 'attente' ? `
+                            <button onclick="confirmerRdv('${rdv.id}')" 
+                                    class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">
+                                ✅ Confirmer
+                            </button>
+                        ` : ''}
+                        <button onclick="annulerRdv('${rdv.id}')" 
+                                class="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition">
+                            ❌ Annuler
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Afficher la liste des rendez-vous
+        function displayRendezVous(rendezVous) {
+            const container = document.getElementById('rendezVousList');
+            
+            if (rendezVous.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <h3 class="mt-4 text-lg font-medium text-gray-900">Aucun rendez-vous</h3>
+                        <p class="mt-2 text-gray-500">Vous n'avez pas de rendez-vous programmés.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Séparer par statut et trier par date
+            const confirmes = rendezVous.filter(rdv => rdv.statut === 'Confirmé').sort((a, b) => new Date(a.date) - new Date(b.date));
+            const enAttente = rendezVous.filter(rdv => rdv.statut === 'En attente').sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            let html = '<div class="space-y-6">';
+            
+            // RDV Confirmés
+            if (confirmes.length > 0) {
+                html += `
+                    <div>
+                        <h4 class="text-lg font-semibold text-green-700 mb-4 flex items-center gap-2">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            Rendez-vous Confirmés (${confirmes.length})
+                        </h4>
+                        <div class="space-y-3">
+                            ${confirmes.map(rdv => creerCarteRdv(rdv, 'confirme')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // RDV En attente
+            if (enAttente.length > 0) {
+                html += `
+                    <div>
+                        <h4 class="text-lg font-semibold text-yellow-700 mb-4 flex items-center gap-2">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                            </svg>
+                            En attente de confirmation (${enAttente.length})
+                        </h4>
+                        <div class="space-y-3">
+                            ${enAttente.map(rdv => creerCarteRdv(rdv, 'attente')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Créer une carte de rendez-vous
+        function creerCarteRdv(rdv, type) {
+            const rdvDate = new Date(rdv.date);
+            const today = new Date();
+            const isToday = rdvDate.toDateString() === today.toDateString();
+            const isPast = rdvDate < today;
+            
+            const couleurs = {
+                'confirme': isToday ? 'border-green-400 bg-green-100' : 'border-green-200 bg-green-50',
+                'attente': 'border-yellow-200 bg-yellow-50'
+            };
+            
+            return `
+                <div class="flex items-center justify-between p-4 rounded-lg border-2 ${couleurs[type]} transition-all hover:shadow-md">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 ${type === 'confirme' ? 'bg-green-200' : 'bg-yellow-200'} rounded-full flex items-center justify-center">
+                            <span class="text-lg font-bold ${type === 'confirme' ? 'text-green-700' : 'text-yellow-700'}">
+                                ${rdv.patient?.prenom?.[0] || '?'}${rdv.patient?.nom?.[0] || '?'}
+                            </span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">
+                                ${rdv.patient?.prenom || ''} ${rdv.patient?.nom || ''}
+                                ${isToday ? ' 🔥' : ''}
+                                ${isPast ? ' (Passé)' : ''}
+                            </h3>
+                            <p class="text-sm text-gray-600">${rdv.patient?.email || 'Email non renseigné'}</p>
+                            ${rdv.motif ? `<p class="text-xs text-gray-500">📝 ${rdv.motif}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" class="text-gray-500">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-900">${rdv.date}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" class="text-gray-500">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 8V6h1.5v6H12z"/>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-900">${rdv.heure}</span>
+                        </div>
+                        ${isToday ? '<span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full font-medium">AUJOURD\'HUI</span>' : ''}
+                    </div>
+                    
+                    <div class="flex flex-col gap-2">
+                        ${type === 'confirme' ? `
+                            <button onclick="commencerConsultationRdv('${rdv.patient.id}')" 
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                                🩺 Consultation
+                            </button>
+                        ` : ''}
+                        ${type === 'attente' ? `
+                            <button onclick="confirmerRdv('${rdv.id}')" 
+                                    class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">
+                                ✅ Confirmer
+                            </button>
+                        ` : ''}
+                        <button onclick="annulerRdv('${rdv.id}')" 
+                                class="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition">
+                            ❌ Annuler
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Commencer une consultation depuis un rendez-vous
+        async function commencerConsultationRdv(patientId) {
+            if (confirm('Ouvrir une nouvelle consultation pour ce patient ?')) {
+                showSection('consultations');
+                // Attendre que la section soit chargée
+                setTimeout(() => {
+                    // Pré-sélectionner le patient dans le formulaire
+                    const patientSelect = document.getElementById('patientId');
+                    if (patientSelect) {
+                        patientSelect.value = patientId;
+                    }
+                    // Ouvrir le modal de consultation
+                    openModal();
+                }, 500);
+            }
+        }
+        
+        // Confirmer un rendez-vous
+        async function confirmerRdv(rdvId) {
+            if (confirm('Confirmer ce rendez-vous ?')) {
+                try {
+                    const response = await fetch(`/api/rendezvous/${rdvId}/statut`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ statut: 'Confirmé' })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('Rendez-vous confirmé avec succès', 'success');
+                        loadRendezVous(); // Recharger
+                    } else {
+                        showNotification('Erreur lors de la confirmation', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de connexion', 'error');
+                }
+            }
+        }
+        
+        // Annuler un rendez-vous
+        async function annulerRdv(rdvId) {
+            if (confirm('Annuler ce rendez-vous ?')) {
+                try {
+                    const response = await fetch(`/api/rendezvous/${rdvId}/statut`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ statut: 'Annulé' })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('Rendez-vous annulé', 'success');
+                        loadRendezVous(); // Recharger
+                    } else {
+                        showNotification('Erreur lors de l\'annulation', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de connexion', 'error');
+                }
+            }
+        }
+                editConsultation(consultationId);
+            }, 500);
+        }
+    </script>
+</body>
+</html>

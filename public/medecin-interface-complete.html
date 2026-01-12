@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Espace Médecin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .section { display: none; }
+        .section.active { display: block; }
+        .sidebar-link.active { background-color: rgba(255, 255, 255, 0.2); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px]"></div>
+
+    <!-- Sidebar Médecin -->
+    <aside class="w-64 bg-gradient-to-b from-green-800 to-green-900 text-white fixed left-0 top-0 h-screen overflow-y-auto">
+        <!-- En-tête Médecin -->
+        <div class="p-6 border-b border-white border-opacity-10">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-3 rounded-2xl shadow-lg">
+                    <svg class="text-green-600" width="28" height="28" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Espace Médecin</h1>
+                    <p class="text-xs text-green-200 mt-0.5 font-medium">Dr. salma hmirin</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Médecin -->
+        <nav class="p-4 space-y-2">
+            <button onclick="showSection('dashboard')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left hover:bg-white hover:bg-opacity-10">
+                <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center">
+                    <span class="text-lg">📊</span>
+                </div>
+                <span>Tableau de Bord</span>
+            </button>
+
+            <button onclick="showSection('rendezvous')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left hover:bg-white hover:bg-opacity-10">
+                <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center">
+                    <span class="text-lg">📅</span>
+                </div>
+                <span>Mes Rendez-vous</span>
+            </button>
+
+            <button onclick="showSection('consultations')" class="sidebar-link active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left hover:bg-white hover:bg-opacity-10">
+                <div class="w-8 h-8 rounded-lg bg-white bg-opacity-20 flex items-center justify-center">
+                    <span class="text-lg">📋</span>
+                </div>
+                <span>Mes Consultations</span>
+            </button>
+
+            <button onclick="showSection('patients')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left hover:bg-white hover:bg-opacity-10">
+                <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center">
+                    <span class="text-lg">👥</span>
+                </div>
+                <span>Mes Patients</span>
+            </button>
+
+            <!-- Déconnexion -->
+            <div class="pt-6 mt-6 border-t border-white border-opacity-10">
+                <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-red-200 hover:bg-red-500 hover:bg-opacity-20">
+                    <div class="w-8 h-8 rounded-lg bg-red-500 bg-opacity-20 flex items-center justify-center">
+                        <span class="text-lg">🚪</span>
+                    </div>
+                    <span>Déconnexion</span>
+                </button>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="ml-64 min-h-screen">
+        <!-- Section Dashboard -->
+        <div id="dashboard-section" class="section">
+            <header class="bg-gradient-to-r from-green-800 to-green-900 border-b border-green-700 px-8 py-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">📊 Tableau de Bord</h1>
+                        <p class="text-green-200 mt-1 font-medium">Vue d'ensemble de votre activité</p>
+                    </div>
+                    <button onclick="loadDashboard()" class="bg-white text-green-800 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 shadow-lg">
+                        🔄 Actualiser
+                    </button>
+                </div>
+            </header>
+
+            <main class="p-8 bg-gradient-to-br from-green-50 to-emerald-50 min-h-screen">
+                <!-- Statistiques Dashboard -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Mes Patients</p>
+                                <h3 id="dashPatients" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
+                                <span class="text-2xl">👥</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Mes Consultations</p>
+                                <h3 id="dashConsultations" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center">
+                                <span class="text-2xl">📋</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Mes RDV</p>
+                                <h3 id="dashRdv" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center">
+                                <span class="text-2xl">📅</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Ce Mois</p>
+                                <h3 id="dashMois" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center">
+                                <span class="text-2xl">📊</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenu Dashboard -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Activité Récente</h3>
+                    <div id="dashboardContent">
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+                            <p class="text-gray-500 mt-4">Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Section Rendez-vous -->
+        <div id="rendezvous-section" class="section">
+            <header class="bg-gradient-to-r from-green-800 to-green-900 border-b border-green-700 px-8 py-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">📅 Mes Rendez-vous</h1>
+                        <p class="text-green-200 mt-1 font-medium">Gestion de vos rendez-vous</p>
+                    </div>
+                    <button onclick="loadRendezVous()" class="bg-white text-green-800 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 shadow-lg">
+                        🔄 Actualiser
+                    </button>
+                </div>
+            </header>
+
+            <main class="p-8 bg-gradient-to-br from-green-50 to-emerald-50 min-h-screen">
+                <!-- Statistiques RDV -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Total</p>
+                                <h3 id="rdvTotal" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">📅</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Confirmés</p>
+                                <h3 id="rdvConfirmed" class="text-3xl font-bold text-green-600 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">✅</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">En Attente</p>
+                                <h3 id="rdvPending" class="text-3xl font-bold text-yellow-600 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">⏳</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Aujourd'hui</p>
+                                <h3 id="rdvToday" class="text-3xl font-bold text-purple-600 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">🗓️</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste RDV -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-900">Liste de Mes Rendez-vous</h3>
+                    </div>
+                    <div id="rdvList" class="p-6">
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+                            <p class="text-gray-500 mt-4">Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Section Consultations -->
+        <div id="consultations-section" class="section active">
+            <header class="bg-gradient-to-r from-green-800 to-green-900 border-b border-green-700 px-8 py-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">📋 Mes Consultations</h1>
+                        <p class="text-green-200 mt-1 font-medium">Gérer vos consultations médicales</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="openConsultationModal()" class="bg-white text-green-800 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 shadow-lg flex items-center gap-2">
+                            <span class="text-lg">➕</span>
+                            Nouvelle Consultation
+                        </button>
+                        <button onclick="loadConsultations()" class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-all duration-300 shadow-lg">
+                            🔄 Actualiser
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="p-8">
+                <!-- Statistiques Consultations -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Total Consultations</p>
+                                <h3 id="consultTotal" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">📋</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Patients Consultés</p>
+                                <h3 id="consultPatients" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">👥</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Avec Diagnostic</p>
+                                <h3 id="consultDiagnostic" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">⭐</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste Consultations -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-900">Liste de Mes Consultations</h3>
+                    </div>
+                    <div id="consultationsList" class="p-6">
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+                            <p class="text-gray-500 mt-4">Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Section Patients -->
+        <div id="patients-section" class="section">
+            <header class="bg-gradient-to-r from-green-800 to-green-900 border-b border-green-700 px-8 py-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">👥 Mes Patients</h1>
+                        <p class="text-green-200 mt-1 font-medium">Gestion de vos patients</p>
+                    </div>
+                    <button onclick="loadPatients()" class="bg-white text-green-800 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 shadow-lg">
+                        🔄 Actualiser
+                    </button>
+                </div>
+            </header>
+
+            <main class="p-8 bg-gradient-to-br from-green-50 to-emerald-50 min-h-screen">
+                <!-- Statistiques Patients -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Total Patients</p>
+                                <h3 id="patientTotal" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">👥</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Avec Consultations</p>
+                                <h3 id="patientWithConsult" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">📋</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Nouveaux ce Mois</p>
+                                <h3 id="patientNew" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">✨</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste Patients -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-900">Liste de Mes Patients</h3>
+                    </div>
+                    <div id="patientsList" class="p-6">
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+                            <p class="text-gray-500 mt-4">Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Nouvelle Consultation -->
+    <div id="consultationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto">
+            <!-- Header du Modal -->
+            <div class="px-8 py-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 id="consultationModalTitle" class="text-2xl font-bold text-gray-900">📋 Nouvelle Consultation</h2>
+                        <p id="consultationModalSubtitle" class="text-gray-600 mt-1">Enregistrer une consultation médicale</p>
+                    </div>
+                    <button onclick="closeConsultationModal()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenu du Modal -->
+            <div class="px-8 py-6 space-y-6">
+                <form id="consultationForm" class="space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                Patient <span class="text-red-500">*</span>
+                            </label>
+                            <select id="consultationPatient" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <option value="">Sélectionnez un patient...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                Date et Heure <span class="text-red-500">*</span>
+                            </label>
+                            <input type="datetime-local" id="consultationDate" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            Motif de Consultation <span class="text-red-500">*</span>
+                        </label>
+                        <textarea id="consultationMotif" rows="3" required 
+                                  placeholder="Décrivez le motif de la consultation..." 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                Diagnostic
+                            </label>
+                            <textarea id="consultationDiagnostic" rows="4" 
+                                      placeholder="Diagnostic médical établi..." 
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                Traitement Prescrit
+                            </label>
+                            <textarea id="consultationTraitement" rows="4" 
+                                      placeholder="Médicaments prescrits et posologie..." 
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+                                </svg>
+                                Ordonnance médicale
+                            </span>
+                        </label>
+                        <textarea id="consultationOrdonnance" rows="4" 
+                                  placeholder="Détails de l'ordonnance médicale (médicaments, posologie, durée du traitement)..." 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">
+                            <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                            </svg>
+                            Exemple: Paracétamol 1g - 1 comprimé 3 fois par jour pendant 5 jours
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            Notes Complémentaires
+                        </label>
+                        <textarea id="consultationNotes" rows="3" 
+                                  placeholder="Observations particulières, recommandations..." 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer du Modal -->
+            <div class="px-8 py-6 border-t border-gray-200 flex gap-4">
+                <button onclick="closeConsultationModal()" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-semibold">
+                    Annuler
+                </button>
+                <button onclick="saveConsultation()" class="flex-1 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition font-semibold">
+                    📋 Enregistrer la Consultation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Détails Consultation -->
+    <div id="detailsConsultationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto">
+            <!-- Header du Modal -->
+            <div class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-blue-50">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                            <svg class="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                            Détails de la Consultation
+                        </h2>
+                        <p class="text-gray-600 mt-1">Informations complètes de la consultation médicale</p>
+                    </div>
+                    <button onclick="closeDetailsModal()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenu du Modal -->
+            <div id="detailsConsultationContent" class="px-8 py-6">
+                <!-- Le contenu sera injecté dynamiquement -->
+            </div>
+
+            <!-- Footer du Modal -->
+            <div class="px-8 py-6 border-t border-gray-200 flex gap-4">
+                <button onclick="closeDetailsModal()" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-semibold">
+                    Fermer
+                </button>
+                <button onclick="modifierDepuisDetails()" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-semibold flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                    Modifier cette Consultation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MEDECIN_ID = 'f8ed993a-f7fd-4e89-a66e-2cd7ca5d8391';
+        
+        // Variables globales
+        let allConsultations = [];
+        let allPatients = [];
+        let allRdv = [];
+        
+        // Fonction de notification
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            notification.className = `fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px] ${colors[type]}`;
+            notification.textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
+        
+        // Navigation entre sections
+        function showSection(sectionName) {
+            console.log('🔄 Navigation vers:', sectionName);
+            
+            // Masquer toutes les sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Afficher la section demandée
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.classList.add('active');
+                console.log('✅ Section affichée:', sectionName);
+            } else {
+                console.error('❌ Section non trouvée:', sectionName);
+            }
+            
+            // Mettre à jour la navigation
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Marquer le lien actif
+            const activeLink = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            // Charger le contenu de la section
+            switch(sectionName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'consultations':
+                    loadConsultations();
+                    break;
+                case 'patients':
+                    loadPatients();
+                    break;
+                case 'rendezvous':
+                    loadRendezVous();
+                    break;
+            }
+        }
+        
+        // Charger Dashboard
+        async function loadDashboard() {
+            console.log('🔄 DASHBOARD - Chargement...');
+            
+            try {
+                // Charger toutes les données
+                const [consultationsRes, patientsRes, rdvRes] = await Promise.all([
+                    fetch('/api/consultations'),
+                    fetch('/api/patients'),
+                    fetch('/api/rendezvous')
+                ]);
+                
+                const consultationsData = await consultationsRes.json();
+                const patientsData = await patientsRes.json();
+                const rdvData = await rdvRes.json();
+                
+                if (consultationsData.success && patientsData.success && rdvData.success) {
+                    const allConsultationsData = consultationsData.data || [];
+                    const allPatientsData = patientsData.data || [];
+                    const allRdvData = rdvData.data || [];
+                    
+                    // Filtrer pour le médecin
+                    const mesConsultations = allConsultationsData.filter(c => 
+                        c.medecin && c.medecin.id === MEDECIN_ID
+                    );
+                    const mesRdv = allRdvData.filter(r => 
+                        r.medecin && r.medecin.id === MEDECIN_ID
+                    );
+                    
+                    const uniquePatients = [...new Set(mesConsultations.map(c => c.patient?.id))].filter(id => id).length;
+                    
+                    // Consultations de ce mois
+                    const currentMonth = new Date().getMonth();
+                    const currentYear = new Date().getFullYear();
+                    const thisMonth = mesConsultations.filter(c => {
+                        const date = new Date(c.consultation?.date);
+                        return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+                    }).length;
+                    
+                    // Mettre à jour les statistiques
+                    document.getElementById('dashPatients').textContent = uniquePatients;
+                    document.getElementById('dashConsultations').textContent = mesConsultations.length;
+                    document.getElementById('dashRdv').textContent = mesRdv.length;
+                    document.getElementById('dashMois').textContent = thisMonth;
+                    
+                    // Afficher contenu
+                    document.getElementById('dashboardContent').innerHTML = `
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-3">📋 Consultations Récentes</h4>
+                                ${mesConsultations.slice(0, 3).map(c => `
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-2">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <span class="text-xs font-bold text-blue-600">${c.patient?.prenom?.[0] || '?'}${c.patient?.nom?.[0] || '?'}</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-sm">${c.patient?.prenom || ''} ${c.patient?.nom || ''}</p>
+                                            <p class="text-xs text-gray-600">${new Date(c.consultation?.date || Date.now()).toLocaleDateString('fr-FR')}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-3">📅 RDV Confirmés</h4>
+                                ${mesRdv.filter(r => r.statut === 'Confirmé').slice(0, 3).map(r => `
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-2">
+                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                            <span class="text-xs font-bold text-green-600">${r.patient?.prenom?.[0] || '?'}${r.patient?.nom?.[0] || '?'}</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-sm">${r.patient?.prenom || ''} ${r.patient?.nom || ''}</p>
+                                            <p class="text-xs text-gray-600">${r.date} à ${r.heure}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    console.log(`✅ Dashboard chargé: ${mesConsultations.length} consultations, ${mesRdv.length} RDV`);
+                    showNotification('✅ Dashboard actualisé', 'success');
+                } else {
+                    throw new Error('Erreur APIs');
+                }
+            } catch (error) {
+                console.error('❌ Erreur Dashboard:', error);
+                showNotification('❌ Erreur de chargement', 'error');
+                document.getElementById('dashboardContent').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de chargement</p>';
+            }
+        }
+        
+        // Charger Consultations
+        async function loadConsultations() {
+            console.log('🔄 CONSULTATIONS - Chargement...');
+            
+            try {
+                const response = await fetch('/api/consultations');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const allConsultationsData = result.data || [];
+                    const mesConsultations = allConsultationsData.filter(c => 
+                        c.medecin && c.medecin.id === MEDECIN_ID
+                    );
+                    
+                    const uniquePatients = [...new Set(mesConsultations.map(c => c.patient?.id))].filter(id => id).length;
+                    const withDiagnostic = mesConsultations.filter(c => c.consultation?.diagnostic && c.consultation.diagnostic.trim()).length;
+                    
+                    // Mettre à jour les statistiques
+                    document.getElementById('consultTotal').textContent = mesConsultations.length;
+                    document.getElementById('consultPatients').textContent = uniquePatients;
+                    document.getElementById('consultDiagnostic').textContent = withDiagnostic;
+                    
+                    // Afficher la liste
+                    if (mesConsultations.length === 0) {
+                        document.getElementById('consultationsList').innerHTML = `
+                            <div class="text-center py-12">
+                                <div class="text-6xl mb-4">📋</div>
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucune consultation</h3>
+                                <p class="text-gray-500">Vous n'avez pas encore de consultations enregistrées</p>
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('consultationsList').innerHTML = `
+                            <div class="space-y-4">
+                                ${mesConsultations.map(c => `
+                                    <div class="flex items-center justify-between p-6 border border-gray-200 rounded-xl hover:shadow-md transition-all duration-200 bg-white">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center shadow-sm">
+                                                <span class="font-bold text-blue-700 text-lg">${c.patient?.prenom?.[0] || '?'}${c.patient?.nom?.[0] || '?'}</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-semibold text-gray-900 text-lg">${c.patient?.prenom || ''} ${c.patient?.nom || ''}</h4>
+                                                <div class="flex items-center gap-4 mt-1">
+                                                    <p class="text-sm text-gray-600 flex items-center gap-1">
+                                                        <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                                                        </svg>
+                                                        ${new Date(c.consultation?.date || Date.now()).toLocaleDateString('fr-FR')}
+                                                    </p>
+                                                    <p class="text-sm text-gray-600 flex items-center gap-1">
+                                                        <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+                                                        </svg>
+                                                        ${c.consultation?.motif || 'Pas de motif'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="text-right mr-2">
+                                                ${c.consultation?.diagnostic ? '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium flex items-center gap-1"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Diagnostic</span>' : ''}
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <button onclick="voirDetailsConsultation('${c.consultation?.id}')" 
+                                                        class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors duration-200 group" 
+                                                        title="Voir les détails">
+                                                    <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                                    </svg>
+                                                </button>
+                                                <button onclick="modifierConsultation('${c.consultation?.id}')" 
+                                                        class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors duration-200 group" 
+                                                        title="Modifier">
+                                                    <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                                    </svg>
+                                                </button>
+                                                <button onclick="supprimerConsultation('${c.consultation?.id}')" 
+                                                        class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors duration-200 group" 
+                                                        title="Supprimer">
+                                                    <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                    
+                    console.log(`✅ Consultations chargées: ${mesConsultations.length}`);
+                    showNotification('✅ Consultations chargées', 'success');
+                } else {
+                    throw new Error('Erreur API');
+                }
+            } catch (error) {
+                console.error('❌ Erreur Consultations:', error);
+                showNotification('❌ Erreur de chargement', 'error');
+                document.getElementById('consultationsList').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de chargement</p>';
+            }
+        }
+        
+        // Charger Patients
+        async function loadPatients() {
+            console.log('🔄 PATIENTS - Chargement...');
+            
+            try {
+                const [patientsRes, consultationsRes] = await Promise.all([
+                    fetch('/api/patients'),
+                    fetch('/api/consultations')
+                ]);
+                
+                const patientsData = await patientsRes.json();
+                const consultationsData = await consultationsRes.json();
+                
+                if (patientsData.success && consultationsData.success) {
+                    const allPatientsData = patientsData.data || [];
+                    const allConsultationsData = consultationsData.data || [];
+                    
+                    const mesConsultations = allConsultationsData.filter(c => 
+                        c.medecin && c.medecin.id === MEDECIN_ID
+                    );
+                    
+                    const patientsWithConsult = [...new Set(mesConsultations.map(c => c.patient?.id))].filter(id => id).length;
+                    
+                    // Nouveaux ce mois
+                    const currentMonth = new Date().getMonth();
+                    const currentYear = new Date().getFullYear();
+                    const newThisMonth = allPatientsData.filter(p => {
+                        if (p.dateCreation) {
+                            const date = new Date(p.dateCreation);
+                            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+                        }
+                        return false;
+                    }).length;
+                    
+                    // Mettre à jour les statistiques
+                    document.getElementById('patientTotal').textContent = allPatientsData.length;
+                    document.getElementById('patientWithConsult').textContent = patientsWithConsult;
+                    document.getElementById('patientNew').textContent = newThisMonth;
+                    
+                    // Afficher la liste
+                    if (allPatientsData.length === 0) {
+                        document.getElementById('patientsList').innerHTML = `
+                            <div class="text-center py-12">
+                                <div class="text-6xl mb-4">👥</div>
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucun patient</h3>
+                                <p class="text-gray-500">Aucun patient enregistré dans le système</p>
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('patientsList').innerHTML = `
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                ${allPatientsData.map(p => `
+                                    <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <span class="font-bold text-blue-600">${p.prenom?.[0] || '?'}${p.nom?.[0] || '?'}</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-semibold">${p.prenom || ''} ${p.nom || ''}</h4>
+                                                <p class="text-sm text-gray-600">${p.email || 'Email non renseigné'}</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-sm text-gray-600">
+                                            ${p.telephone ? `<p>📞 ${p.telephone}</p>` : ''}
+                                            ${p.dateNaissance ? `<p>🎂 ${new Date(p.dateNaissance).toLocaleDateString('fr-FR')}</p>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                    
+                    console.log(`✅ Patients chargés: ${allPatientsData.length}`);
+                    showNotification('✅ Patients chargés', 'success');
+                } else {
+                    throw new Error('Erreur APIs');
+                }
+            } catch (error) {
+                console.error('❌ Erreur Patients:', error);
+                showNotification('❌ Erreur de chargement', 'error');
+                document.getElementById('patientsList').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de chargement</p>';
+            }
+        }
+        
+        // Charger Rendez-vous
+        async function loadRendezVous() {
+            console.log('🔄 RDV - Chargement...');
+            
+            try {
+                const response = await fetch('/api/rendezvous');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const allRdvData = result.data || [];
+                    const mesRdv = allRdvData.filter(r => 
+                        r.medecin && r.medecin.id === MEDECIN_ID
+                    );
+                    
+                    const today = new Date().toISOString().split('T')[0];
+                    const confirmed = mesRdv.filter(r => r.statut === 'Confirmé').length;
+                    const pending = mesRdv.filter(r => r.statut === 'En attente').length;
+                    const todayRdv = mesRdv.filter(r => r.date === today).length;
+                    
+                    // Mettre à jour les statistiques
+                    document.getElementById('rdvTotal').textContent = mesRdv.length;
+                    document.getElementById('rdvConfirmed').textContent = confirmed;
+                    document.getElementById('rdvPending').textContent = pending;
+                    document.getElementById('rdvToday').textContent = todayRdv;
+                    
+                    // Afficher la liste
+                    if (mesRdv.length === 0) {
+                        document.getElementById('rdvList').innerHTML = `
+                            <div class="text-center py-12">
+                                <div class="text-6xl mb-4">📅</div>
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucun rendez-vous</h3>
+                                <p class="text-gray-500">Vous n'avez pas de rendez-vous programmés</p>
+                            </div>
+                        `;
+                    } else {
+                        const confirmedRdv = mesRdv.filter(r => r.statut === 'Confirmé');
+                        const pendingRdv = mesRdv.filter(r => r.statut === 'En attente');
+                        
+                        let html = '<div class="space-y-6">';
+                        
+                        if (confirmedRdv.length > 0) {
+                            html += `
+                                <div>
+                                    <h4 class="text-lg font-semibold text-green-700 mb-4">✅ Confirmés (${confirmedRdv.length})</h4>
+                                    <div class="space-y-3">
+                                        ${confirmedRdv.map(r => `
+                                            <div class="flex items-center justify-between p-4 border-2 border-green-200 bg-green-50 rounded-lg">
+                                                <div class="flex items-center gap-4">
+                                                    <div class="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center">
+                                                        <span class="font-bold text-green-700">${r.patient?.prenom?.[0] || '?'}${r.patient?.nom?.[0] || '?'}</span>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="font-semibold">${r.patient?.prenom || ''} ${r.patient?.nom || ''}</h4>
+                                                        <p class="text-sm text-gray-600">📅 ${r.date} à ${r.heure}</p>
+                                                        <p class="text-sm text-gray-600">📝 ${r.motif || 'Pas de motif'}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="flex gap-2">
+                                                    <button onclick="startConsultation('${r.patient?.id}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
+                                                        🩺 Consultation
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        if (pendingRdv.length > 0) {
+                            html += `
+                                <div>
+                                    <h4 class="text-lg font-semibold text-yellow-700 mb-4">⏳ En attente (${pendingRdv.length})</h4>
+                                    <div class="space-y-3">
+                                        ${pendingRdv.map(r => `
+                                            <div class="flex items-center justify-between p-4 border-2 border-yellow-200 bg-yellow-50 rounded-lg">
+                                                <div class="flex items-center gap-4">
+                                                    <div class="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center">
+                                                        <span class="font-bold text-yellow-700">${r.patient?.prenom?.[0] || '?'}${r.patient?.nom?.[0] || '?'}</span>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="font-semibold">${r.patient?.prenom || ''} ${r.patient?.nom || ''}</h4>
+                                                        <p class="text-sm text-gray-600">📅 ${r.date} à ${r.heure}</p>
+                                                        <p class="text-sm text-gray-600">📝 ${r.motif || 'Pas de motif'}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="flex gap-2">
+                                                    <button onclick="confirmRdv('${r.id}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">
+                                                        ✅ Confirmer
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        html += '</div>';
+                        document.getElementById('rdvList').innerHTML = html;
+                    }
+                    
+                    console.log(`✅ RDV chargés: ${mesRdv.length} (${confirmed} confirmés, ${pending} en attente)`);
+                    showNotification('✅ Rendez-vous chargés', 'success');
+                } else {
+                    throw new Error('Erreur API');
+                }
+            } catch (error) {
+                console.error('❌ Erreur RDV:', error);
+                showNotification('❌ Erreur de chargement', 'error');
+                document.getElementById('rdvList').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de chargement</p>';
+            }
+        }
+        
+        // Confirmer un RDV
+        async function confirmRdv(rdvId) {
+            if (confirm('Confirmer ce rendez-vous ?')) {
+                try {
+                    const response = await fetch(`/api/rendezvous/${rdvId}/statut`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ statut: 'Confirmé' })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('✅ Rendez-vous confirmé', 'success');
+                        loadRendezVous(); // Recharger
+                    } else {
+                        showNotification('❌ Erreur lors de la confirmation', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showNotification('❌ Erreur de connexion', 'error');
+                }
+            }
+        }
+        
+        // Commencer une consultation depuis un RDV
+        function startConsultation(patientId) {
+            console.log('🩺 Démarrage consultation pour patient:', patientId);
+            
+            // Charger les patients pour le modal
+            loadPatientsForModal().then(() => {
+                // Pré-sélectionner le patient
+                const patientSelect = document.getElementById('consultationPatient');
+                if (patientSelect && patientId) {
+                    patientSelect.value = patientId;
+                    console.log('👤 Patient pré-sélectionné:', patientId);
+                }
+                
+                // Définir la date/heure actuelle
+                const now = new Date();
+                const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                document.getElementById('consultationDate').value = localDateTime;
+                
+                // Ouvrir le modal
+                document.getElementById('consultationModal').classList.remove('hidden');
+                
+                showNotification('📋 Modal de consultation ouvert pour le patient', 'success');
+            });
+        }
+        
+        // Ouvrir le modal de consultation
+        function openConsultationModal(preSelectedPatientId = null) {
+            console.log('📋 Ouverture modal consultation', preSelectedPatientId ? `avec patient: ${preSelectedPatientId}` : '');
+            
+            loadPatientsForModal().then(() => {
+                // Pré-sélectionner le patient si fourni
+                if (preSelectedPatientId) {
+                    const patientSelect = document.getElementById('consultationPatient');
+                    if (patientSelect) {
+                        patientSelect.value = preSelectedPatientId;
+                        console.log('👤 Patient pré-sélectionné:', preSelectedPatientId);
+                    }
+                }
+                
+                // Définir la date/heure actuelle
+                const now = new Date();
+                const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                document.getElementById('consultationDate').value = localDateTime;
+                
+                document.getElementById('consultationModal').classList.remove('hidden');
+            });
+        }
+        
+        // Fermer le modal de consultation
+        function closeConsultationModal() {
+            document.getElementById('consultationModal').classList.add('hidden');
+            document.getElementById('consultationForm').reset();
+            
+            // Nettoyer les variables de modification et remettre le titre par défaut
+            currentConsultationId = null;
+            document.getElementById('consultationModal').removeAttribute('data-edit-id');
+            document.getElementById('consultationModalTitle').textContent = '📋 Nouvelle Consultation';
+            document.getElementById('consultationModalSubtitle').textContent = 'Enregistrer une consultation médicale';
+        }
+        
+        // Charger les patients pour le modal
+        async function loadPatientsForModal() {
+            try {
+                const response = await fetch('/api/patients');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const patients = result.data || [];
+                    const select = document.getElementById('consultationPatient');
+                    select.innerHTML = '<option value="">Sélectionnez un patient...</option>';
+                    
+                    patients.forEach(patient => {
+                        const option = document.createElement('option');
+                        option.value = patient.id;
+                        option.textContent = `${patient.prenom} ${patient.nom} - ${patient.email || 'Email non renseigné'}`;
+                        select.appendChild(option);
+                    });
+                    
+                    console.log(`👥 ${patients.length} patients chargés pour le modal`);
+                } else {
+                    console.error('❌ Erreur chargement patients pour modal');
+                }
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+            }
+        }
+        
+        // Sauvegarder la consultation
+        async function saveConsultation() {
+            console.log('💾 Sauvegarde consultation...');
+            
+            const patientId = document.getElementById('consultationPatient').value;
+            const date = document.getElementById('consultationDate').value;
+            const motif = document.getElementById('consultationMotif').value;
+            const diagnostic = document.getElementById('consultationDiagnostic').value;
+            const traitement = document.getElementById('consultationTraitement').value;
+            const ordonnance = document.getElementById('consultationOrdonnance').value;
+            const notes = document.getElementById('consultationNotes').value;
+            
+            // Validation
+            if (!patientId || !date || !motif) {
+                showNotification('❌ Veuillez remplir tous les champs obligatoires', 'error');
+                return;
+            }
+            
+            // Combiner ordonnance avec notes si nécessaire (comme dans l'admin)
+            let finalNotes = notes;
+            if (ordonnance.trim()) {
+                finalNotes = finalNotes ? `${finalNotes}\n\nOrdonnance:\n${ordonnance}` : `Ordonnance:\n${ordonnance}`;
+            }
+            
+            const consultationData = {
+                patientId: patientId,
+                medecinId: MEDECIN_ID,
+                date: date,
+                motif: motif,
+                diagnostic: diagnostic || '',
+                traitement: traitement || '',
+                notes: finalNotes || ''
+            };
+            
+            console.log('📋 Données consultation:', consultationData);
+            console.log('🔄 Mode:', currentConsultationId ? 'Modification' : 'Création');
+            
+            try {
+                const url = currentConsultationId ? 
+                    `/api/consultations/${currentConsultationId}` : 
+                    '/api/consultations';
+                const method = currentConsultationId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(consultationData)
+                });
+                
+                const result = await response.json();
+                console.log('📥 Réponse API:', result);
+                
+                if (result.success) {
+                    const message = currentConsultationId ? '✅ Consultation modifiée avec succès !' : '✅ Consultation créée avec succès !';
+                    showNotification(message, 'success');
+                    closeConsultationModal();
+                    
+                    // Naviguer vers la section consultations pour voir la consultation
+                    showSection('consultations');
+                    
+                    // Recharger les données
+                    loadConsultations(); // Recharger la liste
+                    loadDashboard(); // Mettre à jour le dashboard
+                } else {
+                    showNotification('❌ Erreur: ' + (result.message || 'Erreur inconnue'), 'error');
+                }
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde:', error);
+                showNotification('❌ Erreur de connexion', 'error');
+            }
+        }
+        
+        // Variable pour stocker l'ID de consultation en cours de modification
+        let currentConsultationId = null;
+        
+        // Modifier une consultation - COMME DANS L'ADMIN
+        async function modifierConsultation(consultationId) {
+            try {
+                const response = await fetch(`/api/consultations/${consultationId}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const c = result.data;
+                    currentConsultationId = consultationId;
+                    
+                    // Charger les patients pour le modal
+                    await loadPatientsForModal();
+                    
+                    // Pré-remplir le formulaire avec les données existantes
+                    document.getElementById('consultationPatient').value = c.patient?.id || '';
+                    
+                    if (c.consultation?.date) {
+                        const date = new Date(c.consultation.date);
+                        document.getElementById('consultationDate').value = date.toISOString().slice(0, 16);
+                    }
+                    
+                    document.getElementById('consultationMotif').value = c.consultation?.motif || '';
+                    document.getElementById('consultationDiagnostic').value = c.consultation?.diagnostic || '';
+                    document.getElementById('consultationTraitement').value = c.consultation?.traitement || '';
+                    
+                    // Extraire l'ordonnance des notes si elle existe
+                    const notes = c.consultation?.notes || '';
+                    const ordonnanceMatch = notes.match(/Ordonnance:\n(.*?)(?:\n\n|$)/s);
+                    if (ordonnanceMatch) {
+                        document.getElementById('consultationOrdonnance').value = ordonnanceMatch[1].trim();
+                        document.getElementById('consultationNotes').value = notes.replace(/Ordonnance:\n.*?(?:\n\n|$)/s, '').trim();
+                    } else {
+                        document.getElementById('consultationOrdonnance').value = '';
+                        document.getElementById('consultationNotes').value = notes;
+                    }
+                    
+                    // Changer le titre du modal
+                    document.getElementById('consultationModalTitle').textContent = '✏️ Modifier la Consultation';
+                    document.getElementById('consultationModalSubtitle').textContent = 'Modifier les informations de la consultation';
+                    
+                    // Ouvrir le modal
+                    document.getElementById('consultationModal').classList.remove('hidden');
+                    
+                    showNotification('📝 Consultation chargée pour modification', 'info');
+                } else {
+                    showNotification('❌ Consultation non trouvée', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Erreur modification:', error);
+                showNotification('❌ Erreur de chargement', 'error');
+            }
+        }
+        
+        // Supprimer une consultation - COMME DANS L'ADMIN
+        async function supprimerConsultation(consultationId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette consultation ?')) return;
+            
+            try {
+                const response = await fetch(`/api/consultations/${consultationId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('✅ Consultation supprimée avec succès', 'success');
+                    loadConsultations();
+                    loadDashboard();
+                } else {
+                    showNotification('❌ Erreur lors de la suppression', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                showNotification('❌ Erreur de connexion', 'error');
+            }
+        }
+        
+        // Déconnexion
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                window.location.href = '/medecin-login.html';
+            }
+        }
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Interface médecin chargée');
+            console.log('👨‍⚕️ Médecin ID:', MEDECIN_ID);
+            
+            // Charger la section consultations par défaut
+            loadConsultations();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Patient</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h1 class="text-3xl font-bold text-center">Espace Patient</h1>
+            <p class="text-center text-gray-600 mt-2">Fatiha Maaqoul</p>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="flex border-b">
+                <button onclick="showTab('consultations')" class="tab-btn px-6 py-3 font-medium border-b-2 border-blue-500 text-blue-600">
+                    Mes Consultations
+                </button>
+                <button onclick="showTab('traitements')" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent text-gray-500">
+                    Mes Traitements
+                </button>
+                <button onclick="showTab('rdv')" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent text-gray-500">
+                    Mes Rendez-vous
+                </button>
+                <button onclick="showTab('nouveau')" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent text-gray-500">
+                    Prendre RDV
+                </button>
+            </div>
+        </div>
+        
+        <!-- Contenu -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <!-- Onglet Consultations -->
+            <div id="consultations-content" class="tab-content">
+                <h2 class="text-xl font-bold mb-4">Mes Consultations Passées</h2>
+                <div id="consultations-list">
+                    <p class="text-gray-500">Chargement...</p>
+                </div>
+            </div>
+            
+            <!-- Onglet Traitements -->
+            <div id="traitements-content" class="tab-content hidden">
+                <h2 class="text-xl font-bold mb-4">Mes Traitements</h2>
+                <div id="traitements-list">
+                    <p class="text-gray-500">Chargement...</p>
+                </div>
+            </div>
+            
+            <!-- Onglet RDV -->
+            <div id="rdv-content" class="tab-content hidden">
+                <h2 class="text-xl font-bold mb-4">Mes Rendez-vous</h2>
+                <div id="rdv-list">
+                    <p class="text-gray-500">Chargement...</p>
+                </div>
+            </div>
+            
+            <!-- Onglet Nouveau RDV -->
+            <div id="nouveau-content" class="tab-content hidden">
+                <h2 class="text-xl font-bold mb-4">Prendre un Rendez-vous</h2>
+                <form id="rdvForm" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Date</label>
+                            <input type="date" id="rdvDate" required class="w-full p-2 border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Heure</label>
+                            <select id="rdvHeure" required class="w-full p-2 border rounded">
+                                <option value="">Choisir</option>
+                                <option value="09:00">09:00</option>
+                                <option value="10:00">10:00</option>
+                                <option value="11:00">11:00</option>
+                                <option value="14:00">14:00</option>
+                                <option value="15:00">15:00</option>
+                                <option value="16:00">16:00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Médecin</label>
+                        <select id="rdvMedecin" required class="w-full p-2 border rounded">
+                            <option value="">Choisir un médecin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Motif</label>
+                        <textarea id="rdvMotif" required class="w-full p-2 border rounded" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                        Demander le RDV
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ID du patient (Fatiha Maaqoul)
+        const PATIENT_ID = '61a8f32b-feba-4ed9-9272-647fbb050018';
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConsultations();
+            loadTraitements();
+            loadRendezVous();
+            loadMedecins();
+            
+            // Date minimum = aujourd'hui
+            document.getElementById('rdvDate').min = new Date().toISOString().split('T')[0];
+        });
+        
+        // Gestion des onglets
+        function showTab(tabName) {
+            // Masquer tous les contenus
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-blue-500', 'text-blue-600');
+                el.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Afficher le contenu sélectionné
+            document.getElementById(tabName + '-content').classList.remove('hidden');
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+            event.target.classList.add('border-blue-500', 'text-blue-600');
+        }
+        
+        // Charger les consultations
+        async function loadConsultations() {
+            try {
+                const response = await fetch(`/api/consultations/patient/${PATIENT_ID}`);
+                const result = await response.json();
+                
+                const container = document.getElementById('consultations-list');
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    container.innerHTML = result.data.map(item => `
+                        <div class="border rounded-lg p-4 mb-4">
+                            <h3 class="font-semibold">Consultation du ${new Date(item.consultation.date).toLocaleDateString('fr-FR')}</h3>
+                            <p><strong>Médecin:</strong> Dr. ${item.medecin.prenom} ${item.medecin.nom}</p>
+                            <p><strong>Motif:</strong> ${item.consultation.motif}</p>
+                            ${item.consultation.diagnostic ? `<p><strong>Diagnostic:</strong> ${item.consultation.diagnostic}</p>` : ''}
+                            ${item.consultation.traitement ? `<p><strong>Traitement:</strong> ${item.consultation.traitement}</p>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="text-gray-500">Aucune consultation trouvée</p>';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('consultations-list').innerHTML = '<p class="text-red-500">Erreur de chargement</p>';
+            }
+        }
+        
+        // Charger les traitements
+        async function loadTraitements() {
+            try {
+                const response = await fetch(`/api/consultations/patient/${PATIENT_ID}`);
+                const result = await response.json();
+                
+                const container = document.getElementById('traitements-list');
+                
+                if (result.success && result.data) {
+                    const traitements = result.data.filter(item => item.consultation.traitement && item.consultation.traitement.trim() !== '');
+                    
+                    if (traitements.length > 0) {
+                        container.innerHTML = traitements.map(item => `
+                            <div class="border rounded-lg p-4 mb-4 bg-green-50">
+                                <h3 class="font-semibold">Traitement prescrit le ${new Date(item.consultation.date).toLocaleDateString('fr-FR')}</h3>
+                                <p><strong>Médecin:</strong> Dr. ${item.medecin.prenom} ${item.medecin.nom}</p>
+                                <p><strong>Traitement:</strong> ${item.consultation.traitement}</p>
+                                ${item.consultation.diagnostic ? `<p><strong>Pour:</strong> ${item.consultation.diagnostic}</p>` : ''}
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = '<p class="text-gray-500">Aucun traitement en cours</p>';
+                    }
+                } else {
+                    container.innerHTML = '<p class="text-gray-500">Aucun traitement trouvé</p>';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('traitements-list').innerHTML = '<p class="text-red-500">Erreur de chargement</p>';
+            }
+        }
+        
+        // Charger les rendez-vous
+        async function loadRendezVous() {
+            try {
+                const response = await fetch('/api/rendezvous');
+                const result = await response.json();
+                
+                const container = document.getElementById('rdv-list');
+                
+                if (result.success && result.data) {
+                    // Filtrer les RDV du patient
+                    const patientRdv = result.data.filter(rdv => rdv.patient && rdv.patient.id === PATIENT_ID);
+                    
+                    if (patientRdv.length > 0) {
+                        container.innerHTML = patientRdv.map(rdv => {
+                            const statusColor = rdv.statut === 'Confirmé' ? 'bg-green-50 border-green-200' : 
+                                              rdv.statut === 'En attente' ? 'bg-yellow-50 border-yellow-200' : 
+                                              'bg-red-50 border-red-200';
+                            
+                            return `
+                                <div class="border rounded-lg p-4 mb-4 ${statusColor}">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h3 class="font-semibold">${rdv.date} à ${rdv.heure}</h3>
+                                            <p><strong>Médecin:</strong> Dr. ${rdv.medecin.prenom} ${rdv.medecin.nom}</p>
+                                            ${rdv.motif ? `<p><strong>Motif:</strong> ${rdv.motif}</p>` : ''}
+                                        </div>
+                                        <span class="px-3 py-1 rounded-full text-sm font-medium ${
+                                            rdv.statut === 'Confirmé' ? 'bg-green-100 text-green-800' :
+                                            rdv.statut === 'En attente' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-red-100 text-red-800'
+                                        }">
+                                            ${rdv.statut}
+                                        </span>
+                                    </div>
+                                    ${rdv.statut === 'En attente' ? `
+                                        <div class="mt-3 space-x-2">
+                                            <button onclick="annulerRdv('${rdv.id}')" class="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200">
+                                                Annuler
+                                            </button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        container.innerHTML = '<p class="text-gray-500">Aucun rendez-vous trouvé</p>';
+                    }
+                } else {
+                    container.innerHTML = '<p class="text-gray-500">Erreur de chargement</p>';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('rdv-list').innerHTML = '<p class="text-red-500">Erreur de chargement</p>';
+            }
+        }
+        
+        // Charger les médecins
+        async function loadMedecins() {
+            try {
+                const response = await fetch('/api/medecins');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const select = document.getElementById('rdvMedecin');
+                    select.innerHTML = '<option value="">Choisir un médecin</option>';
+                    
+                    result.data.forEach(medecin => {
+                        const option = document.createElement('option');
+                        option.value = medecin.id;
+                        option.textContent = `Dr. ${medecin.prenom} ${medecin.nom}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+        
+        // Annuler un RDV
+        async function annulerRdv(rdvId) {
+            if (confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?')) {
+                try {
+                    const response = await fetch(`/api/rendezvous/${rdvId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Rendez-vous annulé avec succès');
+                        loadRendezVous(); // Recharger
+                    } else {
+                        alert('Erreur lors de l\'annulation');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur de connexion');
+                }
+            }
+        }
+        
+        // Soumettre le formulaire RDV
+        document.getElementById('rdvForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            console.log('📝 Soumission du formulaire RDV');
+            
+            // Récupérer les données du formulaire
+            const date = document.getElementById('rdvDate').value;
+            const heure = document.getElementById('rdvHeure').value;
+            const medecinId = document.getElementById('rdvMedecin').value;
+            const motif = document.getElementById('rdvMotif').value;
+            
+            console.log('📋 Données:', { date, heure, medecinId, motif });
+            
+            // Validation
+            if (!date || !heure || !medecinId || !motif) {
+                alert('❌ Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+            
+            const formData = {
+                patientId: PATIENT_ID,
+                medecinId: medecinId,
+                dateHeure: `${date}T${heure}:00`,
+                motif: motif,
+                statut: 'En attente'
+            };
+            
+            console.log('🚀 Envoi:', formData);
+            
+            try {
+                const response = await fetch('/api/rendezvous', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                console.log('📥 Réponse:', result);
+                
+                if (result.success) {
+                    alert('✅ Demande de rendez-vous envoyée avec succès !');
+                    document.getElementById('rdvForm').reset();
+                    loadRendezVous(); // Recharger
+                    showTab('rdv'); // Aller à l'onglet RDV
+                } else {
+                    alert(`❌ Erreur: ${result.error || result.message || 'Erreur inconnue'}`);
+                }
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                alert('❌ Erreur de connexion au serveur');
+            }
+        });
+    </script>
+</body>
+</html>

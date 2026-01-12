@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Connexion Patient</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px]"></div>
+
+    <div class="max-w-md w-full mx-4">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="bg-white p-4 rounded-full w-20 h-20 mx-auto mb-4 shadow-lg">
+                <svg class="text-blue-600 w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Espace Patient</h1>
+            <p class="text-gray-600">Connectez-vous pour accéder à vos informations médicales</p>
+        </div>
+
+        <!-- Formulaire de connexion -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="email" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="votre.email@exemple.com">
+                </div>
+
+                <div>
+                    <label for="dateNaissance" class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
+                    <input type="date" id="dateNaissance" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center justify-center">
+                    <span id="loginText">Se connecter</span>
+                    <div id="loginSpinner" class="hidden ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </button>
+            </form>
+
+            <!-- Patients de test -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h3 class="text-sm font-medium text-gray-700 mb-4">Comptes de test disponibles :</h3>
+                <div class="space-y-2">
+                    <button onclick="loginAsPatient('fatiha', 'maaqoul', '2000-12-12')" 
+                            class="w-full text-left px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                        👤 <strong>Fatiha Maaqoul</strong> - Née le 12/12/2000
+                    </button>
+                    <button onclick="loginAsPatient('hmirin', 'zarii', '2000-03-12')" 
+                            class="w-full text-left px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                        👤 <strong>Hmirin Zarii</strong> - Née le 12/03/2000
+                    </button>
+                    <button onclick="loginAsPatient('nour', 'abrf', '')" 
+                            class="w-full text-left px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                        👤 <strong>Nour Abrf</strong> - Date de naissance non renseignée
+                    </button>
+                    <button onclick="loginAsPatient('Fadwa', 'Zarii', '2004-12-14')" 
+                            class="w-full text-left px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                        👤 <strong>Fadwa Zarii</strong> - Née le 14/12/2004
+                    </button>
+                </div>
+            </div>
+
+            <!-- Liens -->
+            <div class="mt-6 text-center space-y-2">
+                <a href="/login.html" class="text-blue-600 hover:text-blue-700 text-sm">Connexion Administrateur</a>
+                <span class="text-gray-400 text-sm mx-2">•</span>
+                <a href="/login-medecin.html" class="text-blue-600 hover:text-blue-700 text-sm">Connexion Médecin</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion du formulaire de connexion
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const dateNaissance = document.getElementById('dateNaissance').value;
+            
+            await authenticatePatient(email, dateNaissance);
+        });
+
+        // Authentification du patient
+        async function authenticatePatient(email, dateNaissance) {
+            const loginText = document.getElementById('loginText');
+            const loginSpinner = document.getElementById('loginSpinner');
+            
+            // Afficher le spinner
+            loginText.textContent = 'Connexion...';
+            loginSpinner.classList.remove('hidden');
+            
+            try {
+                // Rechercher le patient par email et date de naissance
+                const response = await fetch('/api/patients');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const patient = result.data.find(p => {
+                        const emailMatch = p.email && p.email.toLowerCase() === email.toLowerCase();
+                        const dateMatch = !dateNaissance || p.dateNaissance === dateNaissance;
+                        return emailMatch && dateMatch;
+                    });
+                    
+                    if (patient) {
+                        // Connexion réussie
+                        localStorage.setItem('patientId', patient.id);
+                        localStorage.setItem('patientName', `${patient.prenom} ${patient.nom}`);
+                        
+                        showNotification('Connexion réussie !', 'success');
+                        
+                        setTimeout(() => {
+                            window.location.href = '/patient-dashboard.html';
+                        }, 1000);
+                    } else {
+                        showNotification('Patient non trouvé. Vérifiez vos informations.', 'error');
+                    }
+                } else {
+                    showNotification('Erreur lors de la recherche du patient', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur de connexion', 'error');
+            } finally {
+                // Masquer le spinner
+                loginText.textContent = 'Se connecter';
+                loginSpinner.classList.add('hidden');
+            }
+        }
+
+        // Connexion rapide avec les comptes de test
+        async function loginAsPatient(prenom, nom, dateNaissance) {
+            try {
+                const response = await fetch('/api/patients');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const patient = result.data.find(p => 
+                        p.prenom.toLowerCase() === prenom.toLowerCase() && 
+                        p.nom.toLowerCase() === nom.toLowerCase()
+                    );
+                    
+                    if (patient) {
+                        localStorage.setItem('patientId', patient.id);
+                        localStorage.setItem('patientName', `${patient.prenom} ${patient.nom}`);
+                        
+                        showNotification(`Connexion en tant que ${patient.prenom} ${patient.nom}`, 'success');
+                        
+                        setTimeout(() => {
+                            window.location.href = '/patient-dashboard.html';
+                        }, 1000);
+                    } else {
+                        showNotification('Patient non trouvé', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur de connexion', 'error');
+            }
+        }
+
+        // Fonction de notification
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            notification.className = `fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px] ${colors[type]}`;
+            notification.textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

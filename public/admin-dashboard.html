@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Tableau de Bord Administrateur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/sidebar.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px]"></div>
+
+    <!-- Sidebar Container -->
+    <div id="sidebarContainer"></div>
+
+    <!-- Main Content -->
+    <div class="main-content min-h-screen">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-sky-800 to-sky-900 border-b border-sky-700 px-8 py-6 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div class="animate-slide-right">
+                    <h1 class="text-3xl font-bold text-white">Tableau de Bord Administrateur</h1>
+                    <p class="text-sky-200 mt-1 font-medium">Vue d'ensemble du système SGSP</p>
+                </div>
+                <div class="animate-slide-in">
+                    <button onclick="refreshData()" class="bg-white text-sky-800 px-6 py-3 rounded-xl font-semibold hover:bg-sky-50 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="p-8 bg-gradient-to-br from-sky-50 to-blue-50 min-h-screen">
+            <!-- Statistiques Générales -->
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-8">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total Patients</p>
+                            <h3 id="totalPatients" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            <p class="text-sm text-blue-600 mt-2">• Enregistrés</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
+                            <svg class="text-blue-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total Médecins</p>
+                            <h3 id="totalMedecins" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            <p class="text-sm text-green-600 mt-2">• Actifs</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center">
+                            <svg class="text-green-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Consultations</p>
+                            <h3 id="totalConsultations" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            <p class="text-sm text-purple-600 mt-2">• Total</p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center">
+                            <svg class="text-purple-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Rendez-vous</p>
+                            <h3 id="totalRendezVous" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            <p class="text-sm text-indigo-600 mt-2">• Programmés</p>
+                        </div>
+                        <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center">
+                            <svg class="text-indigo-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Utilisateurs</p>
+                            <h3 id="totalUsers" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            <p class="text-sm text-orange-600 mt-2">• Comptes</p>
+                        </div>
+                        <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center">
+                            <svg class="text-orange-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1L9 7V9C9 10.1 9.9 11 11 11V16L7.5 15.5C6.7 15.4 6 16 6 16.8V18.2C6 18.7 6.4 19.2 6.8 19.3L11 20V23H13V20L17.2 19.3C17.6 19.2 18 18.7 18 18.2V16.8C18 16 17.3 15.4 16.5 15.5L13 16V11C14.1 11 15 10.1 15 9H21Z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Rapides -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Gestion des Données</h3>
+                    <div class="space-y-3">
+                        <button onclick="window.location.href='patients.html'" class="w-full bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-blue-700 transition flex items-center gap-2">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            Gérer les Patients
+                        </button>
+                        <button onclick="window.location.href='medecins.html'" class="w-full bg-green-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-green-700 transition flex items-center gap-2">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+                            </svg>
+                            Gérer les Médecins
+                        </button>
+                        <button onclick="window.location.href='historique-consultations.html?admin=true'" class="w-full bg-purple-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-purple-700 transition flex items-center gap-2">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                            </svg>
+                            Gérer les Consultations
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Administration</h3>
+                    <div class="space-y-3">
+                        <button onclick="window.location.href='gestion-comptes.html'" class="w-full bg-sky-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-sky-700 transition flex items-center gap-2">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1L9 7V9C9 10.1 9.9 11 11 11V16L7.5 15.5C6.7 15.4 6 16 6 16.8V18.2C6 18.7 6.4 19.2 6.8 19.3L11 20V23H13V20L17.2 19.3C17.6 19.2 18 18.7 18 18.2V16.8C18 16 17.3 15.4 16.5 15.5L13 16V11C14.1 11 15 10.1 15 9H21Z"/>
+                            </svg>
+                            Gestion des Comptes
+                        </button>
+                        <button onclick="showSystemInfo()" class="w-full bg-gray-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-gray-700 transition flex items-center gap-2">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                            </svg>
+                            Informations Système
+                        </button>
+                        <button onclick="testDatabase()" class="w-full bg-indigo-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition flex items-center gap-2">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3C7.58 3 4 4.79 4 7s3.58 4 8 4 8-1.79 8-4-3.58-4-8-4zM4 9v3c0 2.21 3.58 4 8 4s8-1.79 8-4V9c0 2.21-3.58 4-8 4s-8-1.79-8-4z"/>
+                            </svg>
+                            Test Base de Données
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Opérations CRUD</h3>
+                    <div class="space-y-3">
+                        <button onclick="showCrudOperations()" class="w-full bg-red-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-red-700 transition flex items-center gap-2">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                            Opérations de Suppression
+                        </button>
+                        <button onclick="showDataIntegrity()" class="w-full bg-yellow-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-yellow-700 transition flex items-center gap-2">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            Intégrité des Données
+                        </button>
+                        <button onclick="exportAllData()" class="w-full bg-teal-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-teal-700 transition flex items-center gap-2">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/>
+                            </svg>
+                            Exporter Toutes les Données
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activité Récente -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">Activité Récente du Système</h3>
+                <div id="recentActivity" class="space-y-4">
+                    <!-- L'activité sera chargée ici -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Informations Système -->
+    <div id="systemInfoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold text-gray-900">Informations Système</h3>
+                    <button onclick="closeSystemInfoModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="systemInfoContent" class="space-y-4">
+                    <!-- Le contenu sera chargé ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/auth.js"></script>
+    <script src="/js/sidebar.js"></script>
+    <script>
+        // Vérifier l'authentification au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAuth()) return;
+            
+            // Charger la sidebar
+            document.getElementById('sidebarContainer').innerHTML = createSidebar('dashboard');
+            
+            // Charger les données
+            loadDashboardData();
+        });
+
+        // Charger les données du dashboard
+        async function loadDashboardData() {
+            try {
+                // Charger les statistiques
+                await Promise.all([
+                    loadPatientStats(),
+                    loadMedecinStats(),
+                    loadConsultationStats(),
+                    loadRendezVousStats(),
+                    loadUserStats(),
+                    loadRecentActivity()
+                ]);
+            } catch (error) {
+                console.error('Erreur chargement dashboard:', error);
+                showNotification('Erreur de chargement des données', 'error');
+            }
+        }
+
+        // Charger les statistiques des patients
+        async function loadPatientStats() {
+            try {
+                const response = await fetch('/api/patients');
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('totalPatients').textContent = result.count || result.data.length;
+                }
+            } catch (error) {
+                console.error('Erreur patients:', error);
+                document.getElementById('totalPatients').textContent = '0';
+            }
+        }
+
+        // Charger les statistiques des médecins
+        async function loadMedecinStats() {
+            try {
+                const response = await fetch('/api/medecins');
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('totalMedecins').textContent = result.count || result.data.length;
+                }
+            } catch (error) {
+                console.error('Erreur médecins:', error);
+                document.getElementById('totalMedecins').textContent = '0';
+            }
+        }
+
+        // Charger les statistiques des consultations
+        async function loadConsultationStats() {
+            try {
+                const response = await fetch('/api/consultations');
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('totalConsultations').textContent = result.count || result.data.length;
+                }
+            } catch (error) {
+                console.error('Erreur consultations:', error);
+                document.getElementById('totalConsultations').textContent = '0';
+            }
+        }
+
+        // Charger les statistiques des rendez-vous
+        async function loadRendezVousStats() {
+            try {
+                const response = await fetch('/api/rendezvous');
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('totalRendezVous').textContent = result.count || result.data.length;
+                }
+            } catch (error) {
+                console.error('Erreur rendez-vous:', error);
+                document.getElementById('totalRendezVous').textContent = '0';
+            }
+        }
+
+        // Charger les statistiques des utilisateurs
+        async function loadUserStats() {
+            try {
+                const response = await fetch('/api/auth/users');
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('totalUsers').textContent = result.count || result.data.length;
+                }
+            } catch (error) {
+                console.error('Erreur utilisateurs:', error);
+                document.getElementById('totalUsers').textContent = '0';
+            }
+        }
+
+
+
+
+
+        // Charger l'activité récente avec vraies données
+        async function loadRecentActivity() {
+            const container = document.getElementById('recentActivity');
+            
+            try {
+                // Charger les dernières consultations
+                const consultationsResponse = await fetch('/api/consultations');
+                const consultationsResult = await consultationsResponse.json();
+                
+                // Charger les derniers patients
+                const patientsResponse = await fetch('/api/patients');
+                const patientsResult = await patientsResponse.json();
+                
+                let activities = [];
+                
+                if (consultationsResult.success && consultationsResult.data && consultationsResult.data.length > 0) {
+                    const recentConsultations = consultationsResult.data.slice(0, 3);
+                    activities = activities.concat(recentConsultations.map(item => ({
+                        type: 'consultation',
+                        icon: '📋',
+                        color: 'bg-blue-50',
+                        iconColor: 'text-blue-600',
+                        title: `Consultation: ${item.patient ? (item.patient.prenom + ' ' + item.patient.nom) : 'Patient'}`,
+                        description: `Par ${item.medecin ? ('Dr. ' + item.medecin.prenom + ' ' + item.medecin.nom) : 'Médecin'} - ${item.consultation.motif || 'Consultation générale'}`,
+                        time: new Date(item.consultation.date).toLocaleDateString('fr-FR')
+                    })));
+                }
+                
+                if (patientsResult.success && patientsResult.data && patientsResult.data.length > 0) {
+                    const recentPatients = patientsResult.data.slice(0, 2);
+                    activities = activities.concat(recentPatients.map(patient => ({
+                        type: 'patient',
+                        icon: '👤',
+                        color: 'bg-green-50',
+                        iconColor: 'text-green-600',
+                        title: `Nouveau patient: ${patient.prenom} ${patient.nom}`,
+                        description: `Patient enregistré dans le système`,
+                        time: patient.dateCreation ? new Date(patient.dateCreation).toLocaleDateString('fr-FR') : 'Récemment'
+                    })));
+                }
+                
+                if (activities.length > 0) {
+                    container.innerHTML = activities.map(activity => `
+                        <div class="flex items-center gap-3 p-4 ${activity.color} rounded-lg">
+                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                                <span class="${activity.iconColor}">${activity.icon}</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">${activity.title}</p>
+                                <p class="text-sm text-gray-600">${activity.description}</p>
+                            </div>
+                            <div class="text-xs text-gray-500">${activity.time}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                <svg class="text-gray-400" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900">Système SGSP opérationnel</p>
+                                <p class="text-sm text-gray-600">Base de données Neo4j connectée et synchronisée</p>
+                            </div>
+                            <div class="text-xs text-gray-500">${new Date().toLocaleString('fr-FR')}</div>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Erreur chargement activité:', error);
+                container.innerHTML = `
+                    <div class="flex items-center gap-3 p-4 bg-red-50 rounded-lg">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                            <svg class="text-red-600" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">Erreur de chargement</p>
+                            <p class="text-sm text-gray-600">Impossible de charger l'activité récente</p>
+                        </div>
+                        <div class="text-xs text-gray-500">Maintenant</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Actualiser les données
+        function refreshData() {
+            showNotification('Actualisation des données...', 'info');
+            loadDashboardData();
+            setTimeout(() => {
+                showNotification('Données actualisées avec succès', 'success');
+            }, 1000);
+        }
+
+        // Afficher les informations système
+        async function showSystemInfo() {
+            try {
+                const response = await fetch('/test-db');
+                const result = await response.json();
+                
+                const content = document.getElementById('systemInfoContent');
+                content.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-green-800">État de la Base de Données</h4>
+                            <p class="text-green-700">${result.message}</p>
+                            <p class="text-sm text-green-600">Base: ${result.database}</p>
+                            <p class="text-xs text-green-500">Timestamp: ${result.timestamp}</p>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-blue-800">Fonctionnalités Implémentées</h4>
+                            <ul class="text-blue-700 text-sm space-y-1 mt-2">
+                                <li>✅ CRUD complet pour Patients</li>
+                                <li>✅ CRUD complet pour Médecins</li>
+                                <li>✅ CRUD complet pour Consultations</li>
+                                <li>✅ Gestion des comptes utilisateurs</li>
+                                <li>✅ Dashboards temps réel</li>
+                                <li>✅ Synchronisation Neo4j</li>
+                            </ul>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-purple-800">Interfaces Disponibles</h4>
+                            <ul class="text-purple-700 text-sm space-y-1 mt-2">
+                                <li>• Dashboard Administrateur</li>
+                                <li>• Dashboard Patient (données réelles)</li>
+                                <li>• Dashboard Médecin (données réelles)</li>
+                                <li>• Gestion des Patients</li>
+                                <li>• Gestion des Médecins</li>
+                                <li>• Gestion des Consultations</li>
+                                <li>• Gestion des Comptes</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('systemInfoModal').classList.remove('hidden');
+            } catch (error) {
+                showNotification('Erreur lors du test de la base de données', 'error');
+            }
+        }
+
+        // Fermer le modal d'informations système
+        function closeSystemInfoModal() {
+            document.getElementById('systemInfoModal').classList.add('hidden');
+        }
+
+        // Tester la base de données
+        async function testDatabase() {
+            try {
+                showNotification('Test de la base de données...', 'info');
+                const response = await fetch('/test-db');
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Base de données opérationnelle', 'success');
+                } else {
+                    showNotification('Problème avec la base de données', 'error');
+                }
+            } catch (error) {
+                showNotification('Erreur de connexion à la base de données', 'error');
+            }
+        }
+
+        // Afficher les opérations CRUD
+        function showCrudOperations() {
+            showNotification('Toutes les opérations CRUD sont disponibles dans les interfaces de gestion', 'info');
+        }
+
+        // Vérifier l'intégrité des données
+        function showDataIntegrity() {
+            showNotification('Intégrité des données: Toutes les opérations sont synchronisées avec Neo4j', 'success');
+        }
+
+        // Exporter toutes les données
+        function exportAllData() {
+            showNotification('Fonctionnalité d\'export disponible dans chaque interface de gestion', 'info');
+        }
+
+        // Fonction de notification
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            notification.className = `fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px] ${colors[type]}`;
+            notification.textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

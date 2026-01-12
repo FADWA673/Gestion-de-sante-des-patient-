@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Mes Rendez-vous</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gradient-to-b from-green-800 to-green-900 text-white fixed left-0 top-0 h-screen">
+        <div class="p-6 border-b border-white border-opacity-10">
+            <h1 class="text-xl font-bold">Espace Médecin</h1>
+            <p class="text-xs text-green-200">Dr. salma hmirin</p>
+        </div>
+        
+        <nav class="p-4 space-y-2">
+            <a href="/consultations-medecin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-white hover:bg-opacity-10">
+                📋 Mes Consultations
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-white bg-opacity-20">
+                📅 Mes Rendez-vous
+            </a>
+            <a href="#" onclick="logout()" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-200 hover:bg-red-500 hover:bg-opacity-20">
+                🚪 Déconnexion
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="ml-64 min-h-screen">
+        <header class="bg-gradient-to-r from-green-800 to-green-900 px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-white">Mes Rendez-vous</h1>
+                    <p class="text-green-200">Gestion de vos rendez-vous confirmés</p>
+                </div>
+                <button onclick="chargerRdv()" class="bg-white text-green-800 px-6 py-3 rounded-xl font-semibold hover:bg-green-50">
+                    🔄 Actualiser
+                </button>
+            </div>
+        </header>
+
+        <main class="p-8">
+            <!-- Statistiques -->
+            <div class="grid grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">Total</p>
+                            <h3 id="totalRdv" class="text-3xl font-bold text-gray-900">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                            📅
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">Confirmés</p>
+                            <h3 id="confirmedRdv" class="text-3xl font-bold text-green-600">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                            ✅
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">En Attente</p>
+                            <h3 id="pendingRdv" class="text-3xl font-bold text-yellow-600">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center">
+                            ⏳
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">Aujourd'hui</p>
+                            <h3 id="todayRdv" class="text-3xl font-bold text-purple-600">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                            🗓️
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des RDV -->
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-6 py-4 border-b">
+                    <h3 class="text-lg font-bold text-gray-900">Liste de Mes Rendez-vous</h3>
+                </div>
+                <div id="rdvList" class="p-6">
+                    <div class="text-center py-8">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+                        <p class="text-gray-500 mt-4">Chargement des rendez-vous...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const MEDECIN_ID = 'f8ed993a-f7fd-4e89-a66e-2cd7ca5d8391';
+        
+        // Charger les RDV au démarrage
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Page chargée, chargement des RDV...');
+            chargerRdv();
+        });
+        
+        async function chargerRdv() {
+            console.log('🔄 Chargement des RDV pour médecin:', MEDECIN_ID);
+            
+            try {
+                const response = await fetch('/api/rendezvous');
+                console.log('📡 Réponse API:', response.status);
+                
+                const result = await response.json();
+                console.log('📊 Données reçues:', result);
+                
+                if (result.success && result.data) {
+                    // Filtrer les RDV du médecin
+                    const mesRdv = result.data.filter(rdv => 
+                        rdv.medecin && rdv.medecin.id === MEDECIN_ID
+                    );
+                    
+                    console.log(`👨‍⚕️ Mes RDV: ${mesRdv.length}`);
+                    
+                    // Calculer les statistiques
+                    const today = new Date().toISOString().split('T')[0];
+                    const confirmed = mesRdv.filter(rdv => rdv.statut === 'Confirmé').length;
+                    const pending = mesRdv.filter(rdv => rdv.statut === 'En attente').length;
+                    const todayCount = mesRdv.filter(rdv => rdv.date === today).length;
+                    
+                    // Mettre à jour les statistiques
+                    document.getElementById('totalRdv').textContent = mesRdv.length;
+                    document.getElementById('confirmedRdv').textContent = confirmed;
+                    document.getElementById('pendingRdv').textContent = pending;
+                    document.getElementById('todayRdv').textContent = todayCount;
+                    
+                    console.log(`📈 Stats: Total=${mesRdv.length}, Confirmés=${confirmed}, Attente=${pending}, Aujourd'hui=${todayCount}`);
+                    
+                    // Afficher la liste
+                    afficherRdv(mesRdv);
+                    
+                } else {
+                    console.error('❌ Erreur API:', result);
+                    document.getElementById('rdvList').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de chargement</p>';
+                }
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                document.getElementById('rdvList').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de connexion</p>';
+            }
+        }
+        
+        function afficherRdv(rdvs) {
+            const container = document.getElementById('rdvList');
+            
+            if (rdvs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">📅</div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucun rendez-vous</h3>
+                        <p class="text-gray-500">Vous n'avez pas de rendez-vous programmés</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Séparer par statut
+            const confirmes = rdvs.filter(rdv => rdv.statut === 'Confirmé');
+            const enAttente = rdvs.filter(rdv => rdv.statut === 'En attente');
+            
+            let html = '<div class="space-y-6">';
+            
+            // RDV Confirmés
+            if (confirmes.length > 0) {
+                html += `
+                    <div>
+                        <h4 class="text-lg font-semibold text-green-700 mb-4 flex items-center gap-2">
+                            ✅ Rendez-vous Confirmés (${confirmes.length})
+                        </h4>
+                        <div class="space-y-3">
+                            ${confirmes.map(rdv => creerCarteRdv(rdv, 'confirme')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // RDV En attente
+            if (enAttente.length > 0) {
+                html += `
+                    <div>
+                        <h4 class="text-lg font-semibold text-yellow-700 mb-4 flex items-center gap-2">
+                            ⏳ En attente de confirmation (${enAttente.length})
+                        </h4>
+                        <div class="space-y-3">
+                            ${enAttente.map(rdv => creerCarteRdv(rdv, 'attente')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+            
+            console.log(`📋 Affichage de ${rdvs.length} RDV (${confirmes.length} confirmés, ${enAttente.length} en attente)`);
+        }
+        
+        function creerCarteRdv(rdv, type) {
+            const rdvDate = new Date(rdv.date);
+            const today = new Date();
+            const isToday = rdvDate.toDateString() === today.toDateString();
+            
+            const couleurs = {
+                'confirme': 'border-green-200 bg-green-50',
+                'attente': 'border-yellow-200 bg-yellow-50'
+            };
+            
+            return `
+                <div class="flex items-center justify-between p-4 rounded-lg border-2 ${couleurs[type]}">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 ${type === 'confirme' ? 'bg-green-200' : 'bg-yellow-200'} rounded-full flex items-center justify-center">
+                            <span class="text-lg font-bold ${type === 'confirme' ? 'text-green-700' : 'text-yellow-700'}">
+                                ${rdv.patient?.prenom?.[0] || '?'}${rdv.patient?.nom?.[0] || '?'}
+                            </span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">
+                                ${rdv.patient?.prenom || ''} ${rdv.patient?.nom || ''}
+                                ${isToday ? ' 🔥 AUJOURD\'HUI' : ''}
+                            </h3>
+                            <p class="text-sm text-gray-600">📧 ${rdv.patient?.email || 'Email non renseigné'}</p>
+                            <p class="text-sm text-gray-600">📝 ${rdv.motif || 'Pas de motif'}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-sm font-medium text-gray-900">📅 ${rdv.date}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-sm font-medium text-gray-900">🕐 ${rdv.heure}</span>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium ${
+                            type === 'confirme' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }">
+                            ${rdv.statut}
+                        </span>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2">
+                        ${type === 'confirme' ? `
+                            <button onclick="commencerConsultation('${rdv.patient?.id}')" 
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+                                🩺 Consultation
+                            </button>
+                        ` : ''}
+                        ${type === 'attente' ? `
+                            <button onclick="confirmerRdv('${rdv.id}')" 
+                                    class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">
+                                ✅ Confirmer
+                            </button>
+                        ` : ''}
+                        <button onclick="annulerRdv('${rdv.id}')" 
+                                class="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-200">
+                            ❌ Annuler
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function commencerConsultation(patientId) {
+            if (confirm('Ouvrir une nouvelle consultation pour ce patient ?')) {
+                window.location.href = `/consultations-medecin.html?patient=${patientId}`;
+            }
+        }
+        
+        async function confirmerRdv(rdvId) {
+            if (confirm('Confirmer ce rendez-vous ?')) {
+                try {
+                    const response = await fetch(`/api/rendezvous/${rdvId}/statut`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ statut: 'Confirmé' })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('✅ Rendez-vous confirmé avec succès');
+                        chargerRdv(); // Recharger
+                    } else {
+                        alert('❌ Erreur lors de la confirmation');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('❌ Erreur de connexion');
+                }
+            }
+        }
+        
+        async function annulerRdv(rdvId) {
+            if (confirm('Annuler ce rendez-vous ?')) {
+                try {
+                    const response = await fetch(`/api/rendezvous/${rdvId}/statut`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ statut: 'Annulé' })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('✅ Rendez-vous annulé');
+                        chargerRdv(); // Recharger
+                    } else {
+                        alert('❌ Erreur lors de l\'annulation');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('❌ Erreur de connexion');
+                }
+            }
+        }
+        
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                window.location.href = '/medecin-login.html';
+            }
+        }
+    </script>
+</body>
+</html>

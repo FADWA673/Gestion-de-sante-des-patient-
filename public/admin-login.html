@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Connexion Administrateur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-sky-50 to-blue-100 min-h-screen flex items-center justify-center">
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px]"></div>
+
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="bg-sky-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="text-sky-600" width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1L9 7V9C9 10.1 9.9 11 11 11V16L7.5 15.5C6.7 15.4 6 16 6 16.8V18.2C6 18.7 6.4 19.2 6.8 19.3L11 20V23H13V20L17.2 19.3C17.6 19.2 18 18.7 18 18.2V16.8C18 16 17.3 15.4 16.5 15.5L13 16V11C14.1 11 15 10.1 15 9H21Z"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Connexion Admin</h1>
+            <p class="text-gray-600">Accédez à l'interface d'administration</p>
+        </div>
+
+        <!-- Formulaire de connexion -->
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Email / Nom d'utilisateur</label>
+                <input type="text" id="email" required 
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
+                       placeholder="admin">
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Mot de passe</label>
+                <input type="password" id="password" required 
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
+                       placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="w-full bg-sky-600 text-white py-3 rounded-xl font-semibold hover:bg-sky-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+                Se connecter
+            </button>
+        </form>
+
+        <!-- Liens -->
+        <div class="mt-8 text-center space-y-2">
+            <p class="text-sm text-gray-600">Autres connexions :</p>
+            <div class="flex gap-4 justify-center">
+                <a href="/medecin-login.html" class="text-sm text-green-600 hover:text-green-700 font-medium">Médecin</a>
+                <a href="/patient-login.html" class="text-sm text-blue-600 hover:text-blue-700 font-medium">Patient</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            notification.className = `fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px] ${colors[type]}`;
+            notification.textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Vérifier que c'est bien un admin
+                    if (result.user.role !== 'admin') {
+                        showNotification('Accès refusé: vous n\'êtes pas administrateur', 'error');
+                        return;
+                    }
+                    
+                    // Stocker les informations de connexion
+                    localStorage.setItem('isAuthenticated', 'true');
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    
+                    showNotification('Connexion réussie!', 'success');
+                    
+                    // Redirection vers le dashboard admin
+                    setTimeout(() => {
+                        window.location.href = '/admin-dashboard.html';
+                    }, 1000);
+                } else {
+                    showNotification(result.message || 'Erreur de connexion', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur de connexion au serveur', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

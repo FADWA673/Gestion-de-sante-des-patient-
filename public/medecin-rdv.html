@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Médecin RDV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h1 class="text-3xl font-bold mb-2">Dr. Salma Hmirin</h1>
+            <p class="text-gray-600">Cardiologie</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Mes Rendez-vous Confirmés</h2>
+                <button onclick="loadRendezVous()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    Actualiser
+                </button>
+            </div>
+            
+            <div id="rdv-list">
+                <p class="text-gray-500">Chargement...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MEDECIN_ID = 'f8ed993a-f7fd-4e89-a66e-2cd7ca5d8391'; // Dr. Salma Hmirin
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRendezVous();
+        });
+        
+        async function loadRendezVous() {
+            try {
+                console.log('Chargement des RDV pour médecin:', MEDECIN_ID);
+                
+                const response = await fetch('/api/rendezvous');
+                const result = await response.json();
+                
+                console.log('Réponse API:', result);
+                
+                const container = document.getElementById('rdv-list');
+                
+                if (result.success && result.data) {
+                    // Filtrer les RDV du médecin confirmés
+                    const medecinRdv = result.data.filter(rdv => 
+                        rdv.medecin && rdv.medecin.id === MEDECIN_ID && rdv.statut === 'Confirmé'
+                    );
+                    
+                    console.log('RDV du médecin confirmés:', medecinRdv);
+                    
+                    if (medecinRdv.length > 0) {
+                        // Trier par date
+                        medecinRdv.sort((a, b) => new Date(a.date) - new Date(b.date));
+                        
+                        container.innerHTML = `
+                            <div class="mb-4 p-3 bg-green-50 rounded-lg">
+                                <p class="font-semibold text-green-800">${medecinRdv.length} rendez-vous confirmés</p>
+                            </div>
+                            ${medecinRdv.map(rdv => {
+                                const rdvDate = new Date(rdv.date);
+                                const today = new Date();
+                                const isToday = rdvDate.toDateString() === today.toDateString();
+                                const isPast = rdvDate < today;
+                                
+                                return `
+                                    <div class="border rounded-lg p-4 mb-4 ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'}">
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex-1">
+                                                <h3 class="font-semibold text-lg">
+                                                    ${rdv.date} à ${rdv.heure}
+                                                    ${isToday ? ' 🔥 AUJOURD\'HUI' : ''}
+                                                    ${isPast ? ' (Passé)' : ''}
+                                                </h3>
+                                                <p class="text-gray-700 mt-1"><strong>Patient:</strong> ${rdv.patient.prenom} ${rdv.patient.nom}</p>
+                                                ${rdv.motif ? `<p class="text-gray-600 mt-1"><strong>Motif:</strong> ${rdv.motif}</p>` : ''}
+                                                ${rdv.notes ? `<p class="text-gray-600 mt-1"><strong>Notes:</strong> ${rdv.notes}</p>` : ''}
+                                                
+                                                <div class="mt-3 space-x-2">
+                                                    <button onclick="commencerConsultation('${rdv.patient.id}')" 
+                                                            class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm hover:bg-blue-200">
+                                                        🩺 Commencer consultation
+                                                    </button>
+                                                    ${!isPast ? `
+                                                        <button onclick="annulerRdv('${rdv.id}')" 
+                                                                class="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200">
+                                                            ❌ Annuler
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                                                Confirmé
+                                            </span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        `;
+                    } else {
+                        container.innerHTML = `
+                            <div class="text-center py-8">
+                                <div class="text-gray-400 text-4xl mb-4">📅</div>
+                                <p class="text-gray-500 text-lg">Aucun rendez-vous confirmé</p>
+                                <p class="text-gray-400 text-sm mt-2">Vos prochains rendez-vous apparaîtront ici</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    container.innerHTML = '<p class="text-red-500">Erreur de chargement des rendez-vous</p>';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('rdv-list').innerHTML = '<p class="text-red-500">Erreur de connexion</p>';
+            }
+        }
+        
+        function commencerConsultation(patientId) {
+            alert(`Redirection vers consultation pour patient ${patientId}`);
+            // Ici on pourrait rediriger vers l'interface de consultation
+            // window.location.href = `/consultations-medecin.html?patient=${patientId}`;
+        }
+        
+        async function annulerRdv(rdvId) {
+            if (confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?')) {
+                try {
+                    const response = await fetch(`/api/rendezvous/${rdvId}/statut`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ statut: 'Annulé' })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Rendez-vous annulé avec succès');
+                        loadRendezVous(); // Recharger
+                    } else {
+                        alert('Erreur lors de l\'annulation');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur de connexion');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

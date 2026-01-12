@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter Consultation - Simple</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">📋 Ajouter une Consultation</h1>
+            
+            <div id="message" class="mb-4 p-4 rounded-lg hidden"></div>
+            
+            <form id="consultationForm" class="space-y-4">
+                <!-- Sélection Patient -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Patient *</label>
+                    <select id="patientId" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Chargement des patients...</option>
+                    </select>
+                </div>
+                
+                <!-- Date -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date et Heure *</label>
+                    <input type="datetime-local" id="date" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <!-- Motif -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Motif de consultation *</label>
+                    <input type="text" id="motif" required placeholder="Ex: Consultation de contrôle"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <!-- Diagnostic -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Diagnostic</label>
+                    <textarea id="diagnostic" rows="3" placeholder="Diagnostic médical..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                
+                <!-- Traitement -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Traitement</label>
+                    <textarea id="traitement" rows="3" placeholder="Traitement prescrit..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                
+                <!-- Ordonnance -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ordonnance</label>
+                    <textarea id="ordonnance" rows="4" placeholder="Médicaments prescrits..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                
+                <!-- Notes -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                    <textarea id="notes" rows="3" placeholder="Notes complémentaires..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                
+                <!-- Boutons -->
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="window.history.back()" 
+                            class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-400 transition">
+                        Annuler
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition">
+                        💾 Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Consultations récentes -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">📋 Consultations Récentes</h2>
+            <div id="consultationsList">Chargement...</div>
+        </div>
+    </div>
+
+    <script>
+        const MEDECIN_ID = 'f8ed993a-f7fd-4e89-a66e-2cd7ca5d8391'; // ID du médecin Dr. salma hmirin
+        
+        function showMessage(text, type = 'info') {
+            const message = document.getElementById('message');
+            const colors = {
+                success: 'bg-green-100 text-green-800 border-green-200',
+                error: 'bg-red-100 text-red-800 border-red-200',
+                info: 'bg-blue-100 text-blue-800 border-blue-200'
+            };
+            
+            message.className = `mb-4 p-4 rounded-lg border ${colors[type]}`;
+            message.textContent = text;
+            message.classList.remove('hidden');
+            
+            setTimeout(() => {
+                message.classList.add('hidden');
+            }, 5000);
+        }
+        
+        // Charger les patients
+        async function loadPatients() {
+            try {
+                const response = await fetch('/api/patients');
+                const result = await response.json();
+                
+                const select = document.getElementById('patientId');
+                
+                if (result.success && result.data.length > 0) {
+                    select.innerHTML = '<option value="">Sélectionnez un patient...</option>';
+                    result.data.forEach(patient => {
+                        select.innerHTML += `<option value="${patient.id}">${patient.prenom} ${patient.nom}</option>`;
+                    });
+                } else {
+                    select.innerHTML = '<option value="">Aucun patient disponible</option>';
+                }
+            } catch (error) {
+                console.error('Erreur chargement patients:', error);
+                document.getElementById('patientId').innerHTML = '<option value="">Erreur de chargement</option>';
+            }
+        }
+        
+        // Charger les consultations récentes
+        async function loadConsultations() {
+            try {
+                const response = await fetch(`/api/consultations/medecin/${MEDECIN_ID}`);
+                const result = await response.json();
+                
+                const container = document.getElementById('consultationsList');
+                
+                if (result.success && result.data.length > 0) {
+                    container.innerHTML = result.data.slice(0, 5).map(item => {
+                        const consultation = item.consultation;
+                        const patient = item.patient;
+                        const date = new Date(consultation.date).toLocaleDateString('fr-FR');
+                        
+                        return `
+                            <div class="border border-gray-200 rounded-lg p-4 mb-3">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">${patient.prenom} ${patient.nom}</h3>
+                                        <p class="text-sm text-gray-600">${date} - ${consultation.motif}</p>
+                                        ${consultation.diagnostic ? `<p class="text-sm text-green-600">Diagnostic: ${consultation.diagnostic}</p>` : ''}
+                                    </div>
+                                    <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Terminée</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<p class="text-gray-500">Aucune consultation trouvée</p>';
+                }
+            } catch (error) {
+                console.error('Erreur chargement consultations:', error);
+                document.getElementById('consultationsList').innerHTML = '<p class="text-red-500">Erreur de chargement</p>';
+            }
+        }
+        
+        // Soumettre le formulaire
+        document.getElementById('consultationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Enregistrement...';
+            
+            try {
+                // Récupérer les données du formulaire
+                const formData = {
+                    medecinId: MEDECIN_ID,
+                    patientId: document.getElementById('patientId').value,
+                    date: document.getElementById('date').value,
+                    motif: document.getElementById('motif').value,
+                    diagnostic: document.getElementById('diagnostic').value,
+                    traitement: document.getElementById('traitement').value,
+                    notes: document.getElementById('notes').value,
+                    statut: 'terminee'
+                };
+                
+                // Ajouter l'ordonnance aux notes si elle existe
+                const ordonnance = document.getElementById('ordonnance').value;
+                if (ordonnance.trim()) {
+                    formData.notes = formData.notes ? 
+                        `${formData.notes}\n\n📋 ORDONNANCE:\n${ordonnance}` : 
+                        `📋 ORDONNANCE:\n${ordonnance}`;
+                }
+                
+                // Validation
+                if (!formData.patientId || !formData.date || !formData.motif) {
+                    showMessage('Veuillez remplir tous les champs obligatoires', 'error');
+                    return;
+                }
+                
+                console.log('Envoi consultation:', formData);
+                
+                // Envoyer à l'API
+                const response = await fetch('/api/consultations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('✅ Consultation enregistrée avec succès !', 'success');
+                    
+                    // Réinitialiser le formulaire
+                    document.getElementById('consultationForm').reset();
+                    
+                    // Définir la date actuelle par défaut
+                    const now = new Date();
+                    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                    document.getElementById('date').value = now.toISOString().slice(0, 16);
+                    
+                    // Recharger les consultations
+                    loadConsultations();
+                } else {
+                    showMessage('❌ Erreur: ' + result.message, 'error');
+                    console.error('Erreur API:', result);
+                }
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur de connexion', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💾 Enregistrer';
+            }
+        });
+        
+        // Initialisation
+        window.onload = function() {
+            // Définir la date actuelle par défaut
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('date').value = now.toISOString().slice(0, 16);
+            
+            // Charger les données
+            loadPatients();
+            loadConsultations();
+        };
+    </script>
+</body>
+</html>

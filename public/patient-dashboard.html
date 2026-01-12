@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Espace Patient</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/sidebar.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px]"></div>
+
+    <!-- Sidebar Container -->
+    <div id="sidebarContainer"></div>
+
+    <!-- Main Content -->
+    <div class="main-content min-h-screen">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-sky-800 to-sky-900 border-b border-sky-700 px-8 py-6 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div class="animate-slide-right">
+                    <h1 class="text-3xl font-bold text-white">Espace Patient</h1>
+                    <p class="text-sky-200 mt-1 font-medium" id="patientName">Chargement...</p>
+                </div>
+                <div class="animate-slide-in">
+                    <button onclick="refreshData()" class="bg-white text-sky-800 px-6 py-3 rounded-xl font-semibold hover:bg-sky-50 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="p-8 bg-gradient-to-br from-sky-50 to-blue-50 min-h-screen">
+            <!-- Statistiques Patient -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Consultations</p>
+                            <h3 id="totalConsultations" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            <p class="text-sm text-blue-600 mt-2">• Passées</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
+                            <svg class="text-blue-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Rendez-vous</p>
+                            <h3 id="totalRendezVous" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            <p class="text-sm text-purple-600 mt-2">• Planifiés</p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center">
+                            <svg class="text-purple-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Prochain RDV</p>
+                            <h3 id="prochainRdv" class="text-lg font-bold text-gray-900 mt-2">Aucun</h3>
+                            <p class="text-sm text-orange-600 mt-2" id="prochainRdvDate">• À planifier</p>
+                        </div>
+                        <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center">
+                            <svg class="text-orange-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenu principal -->
+            <div class="space-y-8">
+                <!-- Section Consultations -->
+                <div id="consultations-section" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-bold text-gray-900">Mes Consultations Passées</h3>
+                    </div>
+                    <div id="consultations-list" class="space-y-4">
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                            <p class="text-gray-500 mt-2">Chargement des consultations...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Rendez-vous -->
+                <div id="rendez-vous-section" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hidden">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-bold text-gray-900">Mes Rendez-vous</h3>
+                    </div>
+                    <div id="rdv-list" class="space-y-4">
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                            <p class="text-gray-500 mt-2">Chargement des rendez-vous...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Nouveau RDV -->
+                <div id="nouveau-rdv-section" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hidden">
+                    <div class="max-w-2xl">
+                        <h3 class="text-lg font-bold text-gray-900 mb-6">Prendre un Rendez-vous</h3>
+                        
+                        <form id="rdvForm" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Date souhaitée</label>
+                                    <input type="date" id="rdvDate" required 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Heure souhaitée</label>
+                                    <select id="rdvHeure" required 
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option value="">Choisir une heure</option>
+                                        <option value="08:00">08:00</option>
+                                        <option value="08:30">08:30</option>
+                                        <option value="09:00">09:00</option>
+                                        <option value="09:30">09:30</option>
+                                        <option value="10:00">10:00</option>
+                                        <option value="10:30">10:30</option>
+                                        <option value="11:00">11:00</option>
+                                        <option value="11:30">11:30</option>
+                                        <option value="14:00">14:00</option>
+                                        <option value="14:30">14:30</option>
+                                        <option value="15:00">15:00</option>
+                                        <option value="15:30">15:30</option>
+                                        <option value="16:00">16:00</option>
+                                        <option value="16:30">16:30</option>
+                                        <option value="17:00">17:00</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Médecin</label>
+                                <select id="rdvMedecin" required 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Choisir un médecin</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Motif de consultation</label>
+                                <textarea id="rdvMotif" required rows="3" placeholder="Décrivez brièvement le motif de votre consultation..."
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Notes supplémentaires (optionnel)</label>
+                                <textarea id="rdvNotes" rows="2" placeholder="Informations supplémentaires..."
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                            </div>
+                            
+                            <button type="submit" 
+                                    class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition duration-200">
+                                Demander le Rendez-vous
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/auth.js"></script>
+    <script src="/js/sidebar.js"></script>
+    <script>
+        let currentPatientId = null;
+        let currentTab = 'consultations';
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Récupérer l'ID du patient depuis l'authentification
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            console.log('🔍 Données utilisateur récupérées:', userData);
+            
+            // Vérifier si c'est bien un patient (le rôle peut être dans userData.user.role ou userData.role)
+            const userRole = userData.user?.role || userData.role;
+            if (userRole !== 'patient') {
+                console.error('❌ Utilisateur non patient - Rôle:', userRole);
+                window.location.href = '/login-patient.html';
+                return;
+            }
+            
+            // Récupérer l'ID patient depuis les données utilisateur
+            if (userData.patient && userData.patient.id) {
+                currentPatientId = userData.patient.id;
+                console.log('✅ Patient connecté:', userData.patient.nom, userData.patient.prenom);
+                console.log('✅ ID Patient:', currentPatientId);
+            } else if (userData.user && userData.user.id) {
+                // Fallback: utiliser l'ID utilisateur pour récupérer les données patient
+                currentPatientId = userData.user.id;
+                console.log('✅ Utilisation ID utilisateur comme patient ID:', currentPatientId);
+            } else if (userData.id) {
+                // Autre fallback
+                currentPatientId = userData.id;
+                console.log('✅ Utilisation ID direct comme patient ID:', currentPatientId);
+            } else {
+                console.error('❌ Aucune donnée patient trouvée dans la session');
+                console.error('❌ Structure userData:', userData);
+                // Rediriger vers la page de connexion si pas de données patient
+                window.location.href = '/login-patient.html';
+                return;
+            }
+            
+            // Charger la sidebar patient
+            document.getElementById('sidebarContainer').innerHTML = createPatientSidebar('dashboard');
+            
+            loadPatientInfo();
+            loadMedecins();
+            loadAllData();
+            
+            // Définir la date minimum à aujourd'hui
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('rdvDate').min = today;
+        });
+
+        // Créer la sidebar patient
+        function createPatientSidebar(activePage) {
+            return `
+                <aside id="sidebar" class="sidebar w-64 bg-gradient-to-b from-sky-800 to-sky-900 text-white flex-shrink-0 shadow-2xl fixed left-0 top-0 h-screen overflow-y-auto transition-transform duration-300 z-50">
+                    <!-- En-tête Moderne -->
+                    <div class="p-6 border-b border-white border-opacity-10">
+                        <div class="flex items-center gap-3 animate-slide-right">
+                            <div class="bg-white p-3 rounded-2xl shadow-lg">
+                                <svg class="text-sky-600" width="28" height="28" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-bold tracking-tight">SGSP</h1>
+                                <p class="text-xs text-blue-200 mt-0.5 font-medium">Espace Patient</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 px-3 py-2 bg-white bg-opacity-10 rounded-xl">
+                            <div class="flex items-center gap-2 text-xs text-blue-100">
+                                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                <span>Connecté</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Patient -->
+                    <nav class="p-4 space-y-2">
+                        <div class="text-xs font-semibold text-blue-200 uppercase tracking-wider px-4 py-2 mb-2">
+                            Mon Espace Santé
+                        </div>
+                        
+                        <a href="#" onclick="showSection('consultations')" class="sidebar-link ${activePage === 'consultations' ? 'active' : ''} flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center group-hover:bg-opacity-20 transition">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                                </svg>
+                            </div>
+                            <span>Mes Consultations</span>
+                        </a>
+
+                        <a href="/chat-urgence.html" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group bg-red-600 bg-opacity-20 border border-red-400 border-opacity-30">
+                            <div class="w-8 h-8 rounded-lg bg-red-500 bg-opacity-30 flex items-center justify-center group-hover:bg-opacity-40 transition">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                            </div>
+                            <span>🚨 Chat IA d'Urgence</span>
+                        </a>
+
+                        <a href="#" onclick="showSection('rendez-vous')" class="sidebar-link ${activePage === 'rendez-vous' ? 'active' : ''} flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center group-hover:bg-opacity-20 transition">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/>
+                                </svg>
+                            </div>
+                            <span>Mes Rendez-vous</span>
+                        </a>
+
+                        <a href="#" onclick="showSection('nouveau-rdv')" class="sidebar-link ${activePage === 'nouveau-rdv' ? 'active' : ''} flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center group-hover:bg-opacity-20 transition">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                                </svg>
+                            </div>
+                            <span>Prendre RDV</span>
+                        </a>
+                    </nav>
+
+                    <!-- Profil Patient -->
+                    <div class="mt-auto p-4 border-t border-white border-opacity-10">
+                        <div class="flex items-center gap-3 px-4 py-3 bg-white bg-opacity-10 rounded-xl">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                P
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-semibold text-white truncate" id="sidebarPatientName">Patient</div>
+                                <div class="text-xs text-blue-200">Espace Personnel</div>
+                            </div>
+                            <button onclick="logout()" class="p-2 text-blue-200 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition" title="Déconnexion">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Overlay pour mobile -->
+                <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
+
+                <!-- Bouton Hamburger Moderne -->
+                <button id="hamburgerBtn" onclick="toggleSidebar()" class="fixed top-4 left-4 z-50 bg-sky-600 text-white p-3 rounded-2xl shadow-lg hover:bg-sky-700 transition lg:hidden">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </button>
+            `;
+        }
+
+        // Charger les informations du patient
+        async function loadPatientInfo() {
+            try {
+                const response = await fetch(`/api/patients/${currentPatientId}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const patient = result.data;
+                    const fullName = `${patient.prenom} ${patient.nom}`;
+                    document.getElementById('patientName').textContent = fullName;
+                    document.getElementById('sidebarPatientName').textContent = fullName;
+                }
+            } catch (error) {
+                console.error('Erreur chargement patient:', error);
+            }
+        }
+
+        // Charger tous les médecins pour le formulaire RDV
+        async function loadMedecins() {
+            try {
+                const response = await fetch('/api/medecins');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const select = document.getElementById('rdvMedecin');
+                    select.innerHTML = '<option value="">Choisir un médecin</option>';
+                    
+                    result.data.forEach(medecin => {
+                        const option = document.createElement('option');
+                        option.value = medecin.id;
+                        option.textContent = `Dr. ${medecin.prenom} ${medecin.nom} - ${medecin.specialite || 'Médecine générale'}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur chargement médecins:', error);
+            }
+        }
+
+        // Charger toutes les données
+        async function loadAllData() {
+            await Promise.all([
+                loadConsultations(),
+                loadRendezVous()
+            ]);
+            updateStatistics();
+        }
+
+        // Mettre à jour les statistiques
+        function updateStatistics() {
+            // Les statistiques sont mises à jour par chaque fonction de chargement
+        }
+
+        // Actualiser les données
+        function refreshData() {
+            showNotification('Actualisation des données...', 'info');
+            loadAllData();
+            setTimeout(() => {
+                showNotification('Données actualisées avec succès', 'success');
+            }, 1000);
+        }
+
+        // Charger les consultations du patient
+        async function loadConsultations() {
+            try {
+                const response = await fetch(`/api/consultations/patient/${currentPatientId}`);
+                const result = await response.json();
+                
+                const container = document.getElementById('consultations-list');
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    document.getElementById('totalConsultations').textContent = result.data.length;
+                    
+                    container.innerHTML = result.data.map(item => `
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-blue-600 font-semibold">📋</span>
+                                        <h4 class="font-semibold text-gray-900">Consultation du ${new Date(item.consultation.date).toLocaleDateString('fr-FR')}</h4>
+                                    </div>
+                                    <p class="text-gray-600 mb-2"><strong>Médecin:</strong> Dr. ${item.medecin.prenom} ${item.medecin.nom}</p>
+                                    <p class="text-gray-600 mb-2"><strong>Motif:</strong> ${item.consultation.motif}</p>
+                                    ${item.consultation.diagnostic ? `<p class="text-gray-600 mb-2"><strong>Diagnostic:</strong> ${item.consultation.diagnostic}</p>` : ''}
+                                    ${item.consultation.traitement ? `<p class="text-gray-600 mb-2"><strong>Traitement:</strong> ${item.consultation.traitement}</p>` : ''}
+                                    ${item.consultation.notes ? `<p class="text-gray-600"><strong>Notes:</strong> ${item.consultation.notes}</p>` : ''}
+                                </div>
+                                <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                    Terminée
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('totalConsultations').textContent = '0';
+                    container.innerHTML = `
+                        <div class="text-center py-8">
+                            <div class="text-gray-400 text-4xl mb-4">📋</div>
+                            <p class="text-gray-500">Aucune consultation trouvée</p>
+                            <p class="text-gray-400 text-sm mt-2">Vos consultations passées apparaîtront ici</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur consultations:', error);
+                document.getElementById('consultations-list').innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-red-500">Erreur de chargement des consultations</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Charger les rendez-vous du patient
+        async function loadRendezVous() {
+            try {
+                const response = await fetch('/api/rendezvous');
+                const result = await response.json();
+                
+                const container = document.getElementById('rdv-list');
+                
+                if (result.success && result.data) {
+                    // Filtrer les RDV du patient actuel
+                    const patientRdv = result.data.filter(rdv => rdv.patient && rdv.patient.id === currentPatientId);
+                    document.getElementById('totalRendezVous').textContent = patientRdv.length;
+                    
+                    // Trouver le prochain RDV
+                    const today = new Date();
+                    const futureRdv = patientRdv.filter(rdv => new Date(rdv.date) >= today).sort((a, b) => new Date(a.date) - new Date(b.date));
+                    
+                    if (futureRdv.length > 0) {
+                        const nextRdv = futureRdv[0];
+                        document.getElementById('prochainRdv').textContent = `${nextRdv.heure}`;
+                        document.getElementById('prochainRdvDate').textContent = `• ${new Date(nextRdv.date).toLocaleDateString('fr-FR')}`;
+                    } else {
+                        document.getElementById('prochainRdv').textContent = 'Aucun';
+                        document.getElementById('prochainRdvDate').textContent = '• À planifier';
+                    }
+                    
+                    if (patientRdv.length > 0) {
+                        // Trier par date
+                        patientRdv.sort((a, b) => new Date(a.date) - new Date(b.date));
+                        
+                        container.innerHTML = patientRdv.map(rdv => {
+                            const rdvDate = new Date(rdv.date);
+                            const isPast = rdvDate < today;
+                            const statusColor = rdv.statut === 'Confirmé' ? 'green' : rdv.statut === 'En attente' ? 'yellow' : 'red';
+                            
+                            return `
+                                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <span class="text-purple-600 font-semibold">📅</span>
+                                                <h4 class="font-semibold text-gray-900">
+                                                    ${rdvDate.toLocaleDateString('fr-FR')} à ${rdv.heure}
+                                                    ${isPast ? ' (Passé)' : ''}
+                                                </h4>
+                                            </div>
+                                            <p class="text-gray-600 mb-2"><strong>Médecin:</strong> Dr. ${rdv.medecin.prenom} ${rdv.medecin.nom}</p>
+                                            ${rdv.motif ? `<p class="text-gray-600 mb-2"><strong>Motif:</strong> ${rdv.motif}</p>` : ''}
+                                            ${rdv.notes ? `<p class="text-gray-600"><strong>Notes:</strong> ${rdv.notes}</p>` : ''}
+                                        </div>
+                                        <span class="px-3 py-1 bg-${statusColor}-100 text-${statusColor}-800 text-xs font-medium rounded-full">
+                                            ${rdv.statut}
+                                        </span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        container.innerHTML = `
+                            <div class="text-center py-8">
+                                <div class="text-gray-400 text-4xl mb-4">📅</div>
+                                <p class="text-gray-500">Aucun rendez-vous trouvé</p>
+                                <p class="text-gray-400 text-sm mt-2">Prenez votre premier rendez-vous dans l'onglet "Prendre RDV"</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    document.getElementById('totalRendezVous').textContent = '0';
+                    container.innerHTML = `
+                        <div class="text-center py-8">
+                            <div class="text-gray-400 text-4xl mb-4">📅</div>
+                            <p class="text-gray-500">Aucun rendez-vous trouvé</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur rendez-vous:', error);
+                document.getElementById('rdv-list').innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-red-500">Erreur de chargement des rendez-vous</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Gestion des sections (remplace les onglets)
+        function showSection(sectionName) {
+            // Masquer toutes les sections
+            document.querySelectorAll('[id$="-section"]').forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // Désactiver tous les liens de la sidebar
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Afficher la section sélectionnée
+            document.getElementById(sectionName + '-section').classList.remove('hidden');
+
+            // Activer le lien correspondant dans la sidebar
+            event.target.closest('.sidebar-link').classList.add('active');
+
+            currentTab = sectionName;
+        }
+
+        // Soumettre le formulaire de RDV
+        document.getElementById('rdvForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const date = document.getElementById('rdvDate').value;
+            const heure = document.getElementById('rdvHeure').value;
+            
+            const formData = {
+                patientId: currentPatientId,
+                medecinId: document.getElementById('rdvMedecin').value,
+                date: date,
+                heure: heure,
+                motif: document.getElementById('rdvMotif').value,
+                notes: document.getElementById('rdvNotes').value,
+                statut: 'En attente',
+                duree: 30
+            };
+            
+            try {
+                // Utiliser l'API Neo4j directement
+                const response = await fetch('/api/rendezvous', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        patientId: currentPatientId,
+                        medecinId: formData.medecinId,
+                        dateHeure: `${date}T${heure}:00`,
+                        motif: formData.motif,
+                        notes: formData.notes,
+                        statut: 'En attente',
+                        duree: 30
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Demande de rendez-vous envoyée avec succès !', 'success');
+                    document.getElementById('rdvForm').reset();
+                    
+                    // Recharger les rendez-vous
+                    await loadRendezVous();
+                    
+                    // Basculer vers la section rendez-vous
+                    showSection('rendez-vous');
+                } else {
+                    showNotification('Erreur lors de la demande de rendez-vous: ' + (result.error || 'Erreur inconnue'), 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur de connexion', 'error');
+            }
+        });
+
+        // Fonction de notification
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            notification.className = `fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px] ${colors[type]}`;
+            notification.textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Déconnexion
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('isAuthenticated');
+            window.location.href = '/login-patient.html';
+        }
+
+        // Toggle sidebar pour mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        // Modifier un rendez-vous
+        async function editRendezVous(rdvId) {
+            try {
+                // Récupérer les détails du RDV
+                const response = await fetch('/api/rendezvous');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const rdv = result.data.find(r => r.id === rdvId);
+                    if (rdv) {
+                        // Pré-remplir le formulaire
+                        document.getElementById('rdvDate').value = rdv.date;
+                        document.getElementById('rdvHeure').value = rdv.heure;
+                        document.getElementById('rdvMedecin').value = rdv.medecin.id;
+                        document.getElementById('rdvMotif').value = rdv.motif || '';
+                        document.getElementById('rdvNotes').value = rdv.notes || '';
+                        
+                        // Changer le bouton pour modification
+                        const submitBtn = document.querySelector('#rdvForm button[type="submit"]');
+                        submitBtn.textContent = 'Modifier le Rendez-vous';
+                        submitBtn.dataset.editId = rdvId;
+                        
+                        // Basculer vers la section nouveau RDV
+                        showSection('nouveau-rdv');
+                        
+                        showNotification('Formulaire pré-rempli pour modification', 'info');
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur lors de la récupération du rendez-vous', 'error');
+            }
+        }
+
+        // Annuler un rendez-vous
+        async function cancelRendezVous(rdvId) {
+            if (confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?')) {
+                try {
+                    const response = await fetch(`/api/rendezvous/${rdvId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('Rendez-vous annulé avec succès', 'success');
+                        await loadRendezVous(); // Recharger la liste
+                    } else {
+                        showNotification('Erreur lors de l\'annulation', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de connexion', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

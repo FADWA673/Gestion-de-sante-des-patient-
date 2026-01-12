@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Gestion Globale des Données</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/sidebar.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px]"></div>
+
+    <!-- Sidebar Container -->
+    <div id="sidebarContainer"></div>
+
+    <!-- Main Content -->
+    <div class="main-content min-h-screen">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-sky-800 to-sky-900 border-b border-sky-700 px-8 py-6 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div class="animate-slide-right">
+                    <h1 class="text-3xl font-bold text-white">Gestion Globale des Données</h1>
+                    <p class="text-sky-200 mt-1 font-medium">Vue d'ensemble de toutes les données Neo4j en temps réel</p>
+                </div>
+                <div class="animate-slide-in">
+                    <button onclick="refreshAllData()" class="bg-white text-sky-800 px-6 py-3 rounded-xl font-semibold hover:bg-sky-50 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg>
+                        Actualiser Tout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="p-8 bg-gradient-to-br from-sky-50 to-blue-50 min-h-screen">
+            <!-- Statistiques Globales -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8" id="statsContainer">
+                <!-- Les statistiques seront chargées ici -->
+            </div>
+
+            <!-- Onglets pour les différentes données -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8">
+                <div class="border-b border-gray-200">
+                    <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                        <button onclick="showTab('patients')" class="tab-button active py-4 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600">
+                            👥 Patients
+                        </button>
+                        <button onclick="showTab('medecins')" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            👨‍⚕️ Médecins
+                        </button>
+                        <button onclick="showTab('consultations')" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            📋 Consultations
+                        </button>
+                        <button onclick="showTab('utilisateurs')" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            🔐 Utilisateurs
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Contenu des onglets -->
+                <div class="p-6">
+                    <!-- Onglet Patients -->
+                    <div id="patients-tab" class="tab-content">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-gray-900">Patients Enregistrés</h3>
+                            <button onclick="window.location.href='patients.html'" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
+                                Gérer les Patients
+                            </button>
+                        </div>
+                        <div id="patients-data" class="space-y-3">
+                            <div class="text-center py-8">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                                <p class="text-gray-500 mt-2">Chargement des patients...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Onglet Médecins -->
+                    <div id="medecins-tab" class="tab-content hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-gray-900">Médecins Enregistrés</h3>
+                            <button onclick="window.location.href='medecins.html'" class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+                                Gérer les Médecins
+                            </button>
+                        </div>
+                        <div id="medecins-data" class="space-y-3">
+                            <div class="text-center py-8">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                                <p class="text-gray-500 mt-2">Chargement des médecins...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Onglet Consultations -->
+                    <div id="consultations-tab" class="tab-content hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-gray-900">Consultations Effectuées</h3>
+                            <button onclick="window.location.href='historique-consultations.html?admin=true'" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                                Gérer les Consultations
+                            </button>
+                        </div>
+                        <div id="consultations-data" class="space-y-3">
+                            <div class="text-center py-8">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                                <p class="text-gray-500 mt-2">Chargement des consultations...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Onglet Utilisateurs -->
+                    <div id="utilisateurs-tab" class="tab-content hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-gray-900">Comptes Utilisateurs</h3>
+                            <button onclick="window.location.href='gestion-comptes.html'" class="bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-700 transition">
+                                Gérer les Comptes
+                            </button>
+                        </div>
+                        <div id="utilisateurs-data" class="space-y-3">
+                            <div class="text-center py-8">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+                                <p class="text-gray-500 mt-2">Chargement des utilisateurs...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/auth.js"></script>
+    <script src="/js/sidebar.js"></script>
+    <script>
+        let currentTab = 'patients';
+
+        // Vérifier l'authentification au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAuth()) return;
+            
+            // Charger la sidebar
+            document.getElementById('sidebarContainer').innerHTML = createSidebar('gestion-globale');
+            
+            // Charger toutes les données
+            loadAllData();
+        });
+
+        // Charger toutes les données
+        async function loadAllData() {
+            await Promise.all([
+                loadStats(),
+                loadPatientsData(),
+                loadMedecinsData(),
+                loadConsultationsData(),
+                loadUtilisateursData()
+            ]);
+        }
+
+        // Charger les statistiques
+        async function loadStats() {
+            const statsContainer = document.getElementById('statsContainer');
+            const stats = [
+                { name: 'Patients', endpoint: '/api/patients', color: 'blue', icon: '👥' },
+                { name: 'Médecins', endpoint: '/api/medecins', color: 'green', icon: '👨‍⚕️' },
+                { name: 'Consultations', endpoint: '/api/consultations', color: 'purple', icon: '📋' },
+                { name: 'Utilisateurs', endpoint: '/api/auth/users', color: 'orange', icon: '🔐' }
+            ];
+
+            statsContainer.innerHTML = '';
+
+            for (const stat of stats) {
+                try {
+                    const response = await fetch(stat.endpoint);
+                    const result = await response.json();
+                    const count = result.success ? (result.data ? result.data.length : 0) : 0;
+
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-xl shadow-sm border border-gray-200 p-4';
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">${stat.name}</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-1">${count}</h3>
+                            </div>
+                            <div class="w-10 h-10 bg-${stat.color}-50 rounded-lg flex items-center justify-center">
+                                <span class="text-lg">${stat.icon}</span>
+                            </div>
+                        </div>
+                    `;
+                    statsContainer.appendChild(card);
+                } catch (error) {
+                    console.error(`Erreur ${stat.name}:`, error);
+                }
+            }
+        }
+
+        // Charger les données des patients
+        async function loadPatientsData() {
+            try {
+                const response = await fetch('/api/patients');
+                const result = await response.json();
+                const container = document.getElementById('patients-data');
+
+                if (result.success && result.data.length > 0) {
+                    container.innerHTML = result.data.map(patient => `
+                        <div class="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span class="text-blue-600 font-bold text-sm">${patient.prenom[0]}${patient.nom[0]}</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900">${patient.prenom} ${patient.nom}</h4>
+                                <p class="text-sm text-gray-600">${patient.email || 'Pas d\'email'} • ${patient.telephone || 'Pas de téléphone'}</p>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                ${patient.dateNaissance ? new Date(patient.dateNaissance).toLocaleDateString('fr-FR') : 'Date non définie'}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8">Aucun patient trouvé</p>';
+                }
+            } catch (error) {
+                console.error('Erreur patients:', error);
+                document.getElementById('patients-data').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de chargement</p>';
+            }
+        }
+
+        // Charger les données des médecins
+        async function loadMedecinsData() {
+            try {
+                const response = await fetch('/api/medecins');
+                const result = await response.json();
+                const container = document.getElementById('medecins-data');
+
+                if (result.success && result.data.length > 0) {
+                    container.innerHTML = result.data.map(medecin => `
+                        <div class="flex items-center gap-4 p-4 bg-green-50 rounded-lg">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <span class="text-green-600 font-bold text-sm">${medecin.prenom[0]}${medecin.nom[0]}</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900">Dr. ${medecin.prenom} ${medecin.nom}</h4>
+                                <p class="text-sm text-gray-600">${medecin.specialite || 'Spécialité non définie'} • ${medecin.email || 'Pas d\'email'}</p>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                ${medecin.telephone || 'Pas de téléphone'}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8">Aucun médecin trouvé</p>';
+                }
+            } catch (error) {
+                console.error('Erreur médecins:', error);
+                document.getElementById('medecins-data').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de chargement</p>';
+            }
+        }
+
+        // Charger les données des consultations
+        async function loadConsultationsData() {
+            try {
+                const response = await fetch('/api/consultations');
+                const result = await response.json();
+                const container = document.getElementById('consultations-data');
+
+                if (result.success && result.data.length > 0) {
+                    container.innerHTML = result.data.map(item => `
+                        <div class="flex items-center gap-4 p-4 bg-purple-50 rounded-lg">
+                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                <span class="text-purple-600 text-sm">📋</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900">${item.patient.prenom} ${item.patient.nom}</h4>
+                                <p class="text-sm text-gray-600">Dr. ${item.medecin.prenom} ${item.medecin.nom} • ${item.consultation.motif || 'Consultation générale'}</p>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                ${new Date(item.consultation.date).toLocaleDateString('fr-FR')}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8">Aucune consultation trouvée</p>';
+                }
+            } catch (error) {
+                console.error('Erreur consultations:', error);
+                document.getElementById('consultations-data').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de chargement</p>';
+            }
+        }
+
+        // Charger les données des traitements
+        async function loadTraitementsData() {
+            try {
+                const response = await fetch('/api/traitements');
+                const result = await response.json();
+                const container = document.getElementById('traitements-data');
+
+                if (result.success && result.data && result.data.length > 0) {
+                    container.innerHTML = result.data.map(item => `
+                        <div class="flex items-center gap-4 p-4 bg-teal-50 rounded-lg">
+                            <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                                <span class="text-teal-600 text-sm">💊</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900">${item.traitement.medicament || 'Traitement'}</h4>
+                                <p class="text-sm text-gray-600">${item.traitement.posologie || 'Posologie non définie'}</p>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                ${item.traitement.dateDebut ? new Date(item.traitement.dateDebut).toLocaleDateString('fr-FR') : 'Date non définie'}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8">Aucun traitement trouvé</p>';
+                }
+            } catch (error) {
+                console.error('Erreur traitements:', error);
+                document.getElementById('traitements-data').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de chargement</p>';
+            }
+        }
+
+        // Charger les données des diagnostics
+        async function loadDiagnosticsData() {
+            try {
+                const response = await fetch('/api/diagnostics');
+                const result = await response.json();
+                const container = document.getElementById('diagnostics-data');
+
+                if (result.success && result.data && result.data.length > 0) {
+                    container.innerHTML = result.data.map(item => `
+                        <div class="flex items-center gap-4 p-4 bg-indigo-50 rounded-lg">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <span class="text-indigo-600 text-sm">🔬</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900">${item.diagnostic.description || 'Diagnostic'}</h4>
+                                <p class="text-sm text-gray-600">${item.diagnostic.type || 'Type non défini'}</p>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                ${item.diagnostic.date ? new Date(item.diagnostic.date).toLocaleDateString('fr-FR') : 'Date non définie'}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8">Aucun diagnostic trouvé</p>';
+                }
+            } catch (error) {
+                console.error('Erreur diagnostics:', error);
+                document.getElementById('diagnostics-data').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de chargement</p>';
+            }
+        }
+
+        // Charger les données des utilisateurs
+        async function loadUtilisateursData() {
+            try {
+                const response = await fetch('/api/auth/users');
+                const result = await response.json();
+                const container = document.getElementById('utilisateurs-data');
+
+                if (result.success && result.data.length > 0) {
+                    container.innerHTML = result.data.map(user => `
+                        <div class="flex items-center gap-4 p-4 bg-orange-50 rounded-lg">
+                            <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                <span class="text-orange-600 font-bold text-sm">${user.prenom[0]}${user.nom[0]}</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900">${user.prenom} ${user.nom}</h4>
+                                <p class="text-sm text-gray-600">@${user.username} • ${user.email}</p>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                <span class="px-2 py-1 rounded-full text-xs font-medium ${
+                                    user.role === 'admin' ? 'bg-red-100 text-red-800' :
+                                    user.role === 'medecin' ? 'bg-green-100 text-green-800' :
+                                    'bg-blue-100 text-blue-800'
+                                }">
+                                    ${user.role === 'admin' ? 'Admin' : user.role === 'medecin' ? 'Médecin' : 'Patient'}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8">Aucun utilisateur trouvé</p>';
+                }
+            } catch (error) {
+                console.error('Erreur utilisateurs:', error);
+                document.getElementById('utilisateurs-data').innerHTML = '<p class="text-red-500 text-center py-8">Erreur de chargement</p>';
+            }
+        }
+
+        // Changer d'onglet
+        function showTab(tabName) {
+            // Masquer tous les onglets
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+
+            // Désactiver tous les boutons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            // Afficher l'onglet sélectionné
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+
+            // Activer le bouton correspondant
+            event.target.classList.add('active', 'border-blue-500', 'text-blue-600');
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+
+            currentTab = tabName;
+        }
+
+        // Actualiser toutes les données
+        function refreshAllData() {
+            showNotification('Actualisation de toutes les données...', 'info');
+            loadAllData().then(() => {
+                showNotification('Toutes les données ont été actualisées', 'success');
+            });
+        }
+
+        // Fonction de notification
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            notification.className = `fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px] ${colors[type]}`;
+            notification.textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Admin RDV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8 text-center">Gestion des Rendez-vous - Admin</h1>
+        
+        <!-- Statistiques -->
+        <div class="grid grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-lg shadow p-6 text-center">
+                <div class="text-3xl font-bold text-blue-600" id="totalRdv">-</div>
+                <div class="text-sm text-gray-600">Total</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 text-center">
+                <div class="text-3xl font-bold text-green-600" id="confirmedRdv">-</div>
+                <div class="text-sm text-gray-600">Confirmés</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 text-center">
+                <div class="text-3xl font-bold text-yellow-600" id="pendingRdv">-</div>
+                <div class="text-sm text-gray-600">En attente</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 text-center">
+                <div class="text-3xl font-bold text-red-600" id="cancelledRdv">-</div>
+                <div class="text-sm text-gray-600">Annulés</div>
+            </div>
+        </div>
+        
+        <!-- Liste des RDV -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Tous les Rendez-vous</h2>
+                <button onclick="loadRendezVous()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Actualiser
+                </button>
+            </div>
+            
+            <div id="rdv-list">
+                <p class="text-gray-500">Chargement...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRendezVous();
+        });
+        
+        async function loadRendezVous() {
+            try {
+                console.log('Chargement de tous les RDV...');
+                
+                const response = await fetch('/api/rendezvous');
+                const result = await response.json();
+                
+                console.log('Réponse API:', result);
+                
+                if (result.success && result.data) {
+                    const rdvs = result.data;
+                    
+                    // Mettre à jour les statistiques
+                    const total = rdvs.length;
+                    const confirmed = rdvs.filter(r => r.statut === 'Confirmé').length;
+                    const pending = rdvs.filter(r => r.statut === 'En attente').length;
+                    const cancelled = rdvs.filter(r => r.statut === 'Annulé').length;
+                    
+                    document.getElementById('totalRdv').textContent = total;
+                    document.getElementById('confirmedRdv').textContent = confirmed;
+                    document.getElementById('pendingRdv').textContent = pending;
+                    document.getElementById('cancelledRdv').textContent = cancelled;
+                    
+                    const container = document.getElementById('rdv-list');
+                    
+                    if (rdvs.length > 0) {
+                        // Trier par date (plus récents en premier)
+                        rdvs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                        
+                        container.innerHTML = rdvs.map(rdv => {
+                            const statusColors = {
+                                'Confirmé': 'bg-green-50 border-green-200',
+                                'En attente': 'bg-yellow-50 border-yellow-200',
+                                'Annulé': 'bg-red-50 border-red-200'
+                            };
+                            
+                            const statusBadges = {
+                                'Confirmé': 'bg-green-100 text-green-800',
+                                'En attente': 'bg-yellow-100 text-yellow-800',
+                                'Annulé': 'bg-red-100 text-red-800'
+                            };
+                            
+                            return `
+                                <div class="border rounded-lg p-4 mb-4 ${statusColors[rdv.statut] || 'bg-gray-50'}">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <h3 class="font-semibold text-lg">${rdv.date} à ${rdv.heure}</h3>
+                                            <p class="text-gray-700 mt-1">
+                                                <strong>Patient:</strong> ${rdv.patient?.prenom} ${rdv.patient?.nom} | 
+                                                <strong>Médecin:</strong> Dr. ${rdv.medecin?.prenom} ${rdv.medecin?.nom}
+                                            </p>
+                                            ${rdv.motif ? `<p class="text-gray-600 mt-1"><strong>Motif:</strong> ${rdv.motif}</p>` : ''}
+                                            ${rdv.notes ? `<p class="text-gray-600 mt-1"><strong>Notes:</strong> ${rdv.notes}</p>` : ''}
+                                            
+                                            <div class="mt-3 space-x-2">
+                                                ${rdv.statut === 'En attente' ? `
+                                                    <button onclick="changerStatut('${rdv.id}', 'Confirmé')" 
+                                                            class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm hover:bg-green-200">
+                                                        ✅ Confirmer
+                                                    </button>
+                                                ` : ''}
+                                                ${rdv.statut !== 'Annulé' ? `
+                                                    <button onclick="changerStatut('${rdv.id}', 'Annulé')" 
+                                                            class="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200">
+                                                        ❌ Annuler
+                                                    </button>
+                                                ` : ''}
+                                                <button onclick="supprimerRdv('${rdv.id}')" 
+                                                        class="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-200">
+                                                    🗑️ Supprimer
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <span class="px-3 py-1 rounded-full text-sm font-medium ${statusBadges[rdv.statut] || 'bg-gray-100 text-gray-800'}">
+                                            ${rdv.statut}
+                                        </span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        container.innerHTML = `
+                            <div class="text-center py-8">
+                                <div class="text-gray-400 text-4xl mb-4">📅</div>
+                                <p class="text-gray-500 text-lg">Aucun rendez-vous trouvé</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    document.getElementById('rdv-list').innerHTML = '<p class="text-red-500">Erreur de chargement des rendez-vous</p>';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('rdv-list').innerHTML = '<p class="text-red-500">Erreur de connexion</p>';
+            }
+        }
+        
+        async function changerStatut(rdvId, nouveauStatut) {
+            try {
+                const response = await fetch(`/api/rendezvous/${rdvId}/statut`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ statut: nouveauStatut })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`Rendez-vous ${nouveauStatut.toLowerCase()} avec succès`);
+                    loadRendezVous(); // Recharger
+                } else {
+                    alert('Erreur lors du changement de statut');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de connexion');
+            }
+        }
+        
+        async function supprimerRdv(rdvId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer définitivement ce rendez-vous ?')) {
+                try {
+                    const response = await fetch(`/api/rendezvous/${rdvId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Rendez-vous supprimé avec succès');
+                        loadRendezVous(); // Recharger
+                    } else {
+                        alert('Erreur lors de la suppression');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur de connexion');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

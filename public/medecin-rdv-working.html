@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Médecin RDV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px]"></div>
+
+    <!-- Sidebar Médecin -->
+    <aside class="w-64 bg-gradient-to-b from-green-800 to-green-900 text-white fixed left-0 top-0 h-screen overflow-y-auto">
+        <!-- En-tête Médecin -->
+        <div class="p-6 border-b border-white border-opacity-10">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-3 rounded-2xl shadow-lg">
+                    <svg class="text-green-600" width="28" height="28" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Dr. Salma Hmirin</h1>
+                    <p class="text-xs text-green-200 mt-0.5 font-medium">Cardiologie</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="p-4 space-y-2">
+            <a href="#" onclick="showSection('dashboard')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+                <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                </div>
+                <span>Tableau de Bord</span>
+            </a>
+
+            <a href="#" onclick="showSection('rendezvous')" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+                <div class="w-8 h-8 rounded-lg bg-white bg-opacity-20 flex items-center justify-center">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/>
+                    </svg>
+                </div>
+                <span>Mes Rendez-vous</span>
+            </a>
+
+            <!-- Déconnexion -->
+            <div class="pt-6 mt-6 border-t border-white border-opacity-10">
+                <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-red-200 hover:bg-red-500 hover:bg-opacity-20">
+                    <div class="w-8 h-8 rounded-lg bg-red-500 bg-opacity-20 flex items-center justify-center">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                        </svg>
+                    </div>
+                    <span>Déconnexion</span>
+                </button>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="ml-64 min-h-screen">
+        <!-- Section Dashboard -->
+        <div id="dashboard-section" class="section hidden">
+            <header class="bg-gradient-to-r from-green-800 to-green-900 border-b border-green-700 px-8 py-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">Tableau de Bord</h1>
+                        <p class="text-green-200 mt-1 font-medium">Vue d'ensemble de votre activité</p>
+                    </div>
+                </div>
+            </header>
+            <main class="p-8">
+                <p class="text-gray-600">Tableau de bord en construction...</p>
+            </main>
+        </div>
+
+        <!-- Section Rendez-vous -->
+        <div id="rendezvous-section" class="section">
+            <header class="bg-gradient-to-r from-green-800 to-green-900 border-b border-green-700 px-8 py-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">Mes Rendez-vous</h1>
+                        <p class="text-green-200 mt-1 font-medium">Gestion de vos rendez-vous</p>
+                    </div>
+                    <button onclick="loadRendezVous()" class="bg-white text-green-800 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 shadow-lg">
+                        🔄 Actualiser
+                    </button>
+                </div>
+            </header>
+
+            <main class="p-8 bg-gradient-to-br from-green-50 to-emerald-50 min-h-screen">
+                <!-- Statistiques Rendez-vous -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Total</p>
+                                <h3 id="rdvTotalCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                                <svg class="text-blue-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Confirmés</p>
+                                <h3 id="rdvConfirmedCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                                <svg class="text-green-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">En Attente</p>
+                                <h3 id="rdvPendingCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
+                                <svg class="text-orange-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Aujourd'hui</p>
+                                <h3 id="rdvTodayCount" class="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                                <svg class="text-purple-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 8V6h1.5v6H12z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste des Rendez-vous -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-900">Mes Rendez-vous</h3>
+                    </div>
+                    <div id="rendezVousList" class="p-6">
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+                            <p class="text-gray-500 mt-4">Chargement des rendez-vous...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const MEDECIN_ID = 'f8ed993a-f7fd-4e89-a66e-2cd7ca5d8391'; // Dr. Salma Hmirin
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initialisation interface médecin');
+            showSection('rendezvous');
+            loadRendezVous();
+        });
+        
+        // Gestion des sections
+        function showSection(sectionName) {
+            console.log('📋 Changement de section:', sectionName);
+            
+            // Masquer toutes les sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Retirer la classe active de tous les liens
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Afficher la section sélectionnée
+            document.getElementById(sectionName + '-section').classList.remove('hidden');
+            
+            // Ajouter la classe active au lien cliqué
+            event.target.closest('.sidebar-link').classList.add('active');
+            
+            // Charger les données selon la section
+            if (sectionName === 'rendezvous') {
+                loadRendezVous();
+            }
+        }
+        
+        // Charger les rendez-vous
+        async function loadRendezVous() {
+            console.log('📅 Chargement des rendez-vous pour médecin:', MEDECIN_ID);
+            
+            try {
+                const response = await fetch('/api/rendezvous');
+                const result = await response.json();
+                
+                console.log('📥 Réponse API:', result);
+                
+                if (result.success && result.data) {
+                    // Filtrer les RDV du médecin
+                    const mesRdv = result.data.filter(rdv => 
+                        rdv.medecin && rdv.medecin.id === MEDECIN_ID
+                    );
+                    
+                    console.log(`👨‍⚕️ Mes RDV trouvés: ${mesRdv.length}`);
+                    
+                    // Calculer les statistiques
+                    const total = mesRdv.length;
+                    const confirmed = mesRdv.filter(rdv => rdv.statut === 'Confirmé').length;
+                    const pending = mesRdv.filter(rdv => rdv.statut === 'En attente').length;
+                    
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayRdv = mesRdv.filter(rdv => rdv.date === today).length;
+                    
+                    // Mettre à jour les statistiques
+                    document.getElementById('rdvTotalCount').textContent = total;
+                    document.getElementById('rdvConfirmedCount').textContent = confirmed;
+                    document.getElementById('rdvPendingCount').textContent = pending;
+                    document.getElementById('rdvTodayCount').textContent = todayRdv;
+                    
+                    displayRendezVous(mesRdv);
+                    showNotification('Rendez-vous chargés avec succès', 'success');
+                } else {
+                    showNotification('Erreur de chargement des rendez-vous', 'error');
+                    document.getElementById('rendezVousList').innerHTML = `
+                        <div class="text-center py-8">
+                            <p class="text-red-500">Erreur de chargement</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                showNotification('Erreur de connexion', 'error');
+                document.getElementById('rendezVousList').innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-red-500">Erreur de connexion</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Afficher les rendez-vous
+        function displayRendezVous(rendezVous) {
+            const container = document.getElementById('rendezVousList');
+            
+            if (rendezVous.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <h3 class="mt-4 text-lg font-medium text-gray-900">Aucun rendez-vous</h3>
+                        <p class="mt-2 text-gray-500">Vos rendez-vous apparaîtront ici</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Séparer par statut et trier par date
+            const confirmes = rendezVous.filter(rdv => rdv.statut === 'Confirmé').sort((a, b) => new Date(a.date) - new Date(b.date));
+            const enAttente = rendezVous.filter(rdv => rdv.statut === 'En attente').sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            let html = '<div class="space-y-6">';
+            
+            // RDV Confirmés
+            if (confirmes.length > 0) {
+                html += `
+                    <div>
+                        <h4 class="text-lg font-semibold text-green-700 mb-4 flex items-center gap-2">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            Rendez-vous Confirmés (${confirmes.length})
+                        </h4>
+                        <div class="space-y-3">
+                            ${confirmes.map(rdv => creerCarteRdv(rdv, 'confirme')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // RDV En attente
+            if (enAttente.length > 0) {
+                html += `
+                    <div>
+                        <h4 class="text-lg font-semibold text-yellow-700 mb-4 flex items-center gap-2">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                            </svg>
+                            En attente de confirmation (${enAttente.length})
+                        </h4>
+                        <div class="space-y-3">
+                            ${enAttente.map(rdv => creerCarteRdv(rdv, 'attente')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Créer une carte de rendez-vous
+        function creerCarteRdv(rdv, type) {
+            const rdvDate = new Date(rdv.date);
+            const today = new Date();
+            const isToday = rdvDate.toDateString() === today.toDateString();
+            const isPast = rdvDate < today;
+            
+            const couleurs = {
+                'confirme': isToday ? 'border-green-400 bg-green-100' : 'border-green-200 bg-green-50',
+                'attente': 'border-yellow-200 bg-yellow-50'
+            };
+            
+            return `
+                <div class="flex items-center justify-between p-4 rounded-lg border-2 ${couleurs[type]} transition-all hover:shadow-md">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 ${type === 'confirme' ? 'bg-green-200' : 'bg-yellow-200'} rounded-full flex items-center justify-center">
+                            <span class="text-lg font-bold ${type === 'confirme' ? 'text-green-700' : 'text-yellow-700'}">
+                                ${rdv.patient?.prenom?.[0] || '?'}${rdv.patient?.nom?.[0] || '?'}
+                            </span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">
+                                ${rdv.patient?.prenom || ''} ${rdv.patient?.nom || ''}
+                                ${isToday ? ' 🔥 AUJOURD\'HUI' : ''}
+                                ${isPast ? ' (Passé)' : ''}
+                            </h3>
+                            <p class="text-sm text-gray-600">${rdv.patient?.email || 'Email non renseigné'}</p>
+                            ${rdv.motif ? `<p class="text-xs text-gray-500">📝 ${rdv.motif}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" class="text-gray-500">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-900">${rdv.date}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" class="text-gray-500">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 8V6h1.5v6H12z"/>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-900">${rdv.heure}</span>
+                        </div>
+                        ${isToday ? '<span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full font-medium">AUJOURD\'HUI</span>' : ''}
+                    </div>
+                    
+                    <div class="flex flex-col gap-2">
+                        ${type === 'attente' ? `
+                            <button onclick="confirmerRdv('${rdv.id}')" 
+                                    class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">
+                                ✅ Confirmer
+                            </button>
+                        ` : ''}
+                        <button onclick="annulerRdv('${rdv.id}')" 
+                                class="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition">
+                            ❌ Annuler
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Confirmer un rendez-vous
+        async function confirmerRdv(rdvId) {
+            if (confirm('Confirmer ce rendez-vous ?')) {
+                try {
+                    const response = await fetch(`/api/rendezvous/${rdvId}/statut`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ statut: 'Confirmé' })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('Rendez-vous confirmé avec succès', 'success');
+                        loadRendezVous(); // Recharger
+                    } else {
+                        showNotification('Erreur lors de la confirmation', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de connexion', 'error');
+                }
+            }
+        }
+        
+        // Annuler un rendez-vous
+        async function annulerRdv(rdvId) {
+            if (confirm('Annuler ce rendez-vous ?')) {
+                try {
+                    const response = await fetch(`/api/rendezvous/${rdvId}/statut`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ statut: 'Annulé' })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('Rendez-vous annulé', 'success');
+                        loadRendezVous(); // Recharger
+                    } else {
+                        showNotification('Erreur lors de l\'annulation', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de connexion', 'error');
+                }
+            }
+        }
+        
+        // Afficher une notification
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.className = `fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px] ${
+                type === 'success' ? 'bg-green-600' : 
+                type === 'error' ? 'bg-red-600' : 
+                'bg-blue-600'
+            }`;
+            notification.textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // Déconnexion
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                window.location.href = '/login.html';
+            }
+        }
+    </script>
+
+    <style>
+        .section {
+            display: none;
+        }
+        .section:not(.hidden) {
+            display: block;
+        }
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</body>
+</html>

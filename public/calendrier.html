@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Calendrier des Rendez-vous</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/sidebar.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Notification -->
+    <div id="notification" class="hidden notification"></div>
+
+    <!-- Sidebar Container -->
+    <div id="sidebarContainer"></div>
+
+    <!-- Main Content -->
+    <div class="main-content min-h-screen">
+        <header class="bg-gradient-to-r from-sky-800 to-sky-900 border-b border-sky-700 px-8 py-6 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div class="animate-slide-right">
+                    <div class="flex items-center gap-4 mb-2">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center shadow-lg">
+                            <svg class="text-white" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold text-white">Calendrier des Rendez-vous</h1>
+                            <p class="text-sky-200 mt-1 font-medium">Gérer les rendez-vous et les disponibilités</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="p-8 space-y-8 bg-gradient-to-br from-sky-50 to-blue-50 min-h-screen">
+            <!-- Formulaire de création -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 class="text-xl font-bold mb-4">Nouveau Rendez-vous</h2>
+                
+                <!-- Messages -->
+                <div id="message" class="hidden mb-4 p-4 rounded-lg"></div>
+                
+                <form id="rdvForm" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Patient *</label>
+                            <select id="rdvPatient" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Choisir un patient</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Médecin *</label>
+                            <select id="rdvMedecin" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Choisir un médecin</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Date *</label>
+                            <input type="date" id="rdvDate" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Heure *</label>
+                            <select id="rdvHeure" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Choisir une heure</option>
+                                <option value="08:00">08:00</option>
+                                <option value="08:30">08:30</option>
+                                <option value="09:00">09:00</option>
+                                <option value="09:30">09:30</option>
+                                <option value="10:00">10:00</option>
+                                <option value="10:30">10:30</option>
+                                <option value="11:00">11:00</option>
+                                <option value="11:30">11:30</option>
+                                <option value="14:00">14:00</option>
+                                <option value="14:30">14:30</option>
+                                <option value="15:00">15:00</option>
+                                <option value="15:30">15:30</option>
+                                <option value="16:00">16:00</option>
+                                <option value="16:30">16:30</option>
+                                <option value="17:00">17:00</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Motif de consultation *</label>
+                        <textarea id="rdvMotif" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Motif de la consultation..."></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Statut</label>
+                        <select id="rdvStatut" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="En attente">En attente</option>
+                            <option value="Confirmé">Confirmé</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Notes (optionnel)</label>
+                        <textarea id="rdvNotes" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Notes additionnelles..."></textarea>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button type="submit" id="submitBtn" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium flex-1 flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                            </svg>
+                            Créer le Rendez-vous
+                        </button>
+                        <button type="button" onclick="resetForm()" class="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 font-medium flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                            </svg>
+                            Réinitialiser
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Liste des RDV récents -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Rendez-vous Récents</h2>
+                    <button onclick="loadRecentRdv()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg>
+                        Actualiser
+                    </button>
+                </div>
+                <div id="recentRdv">
+                    <p class="text-gray-500">Chargement...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initialisation interface admin RDV');
+            
+            loadPatients();
+            loadMedecins();
+            loadRecentRdv();
+            
+            // Date minimum = aujourd'hui
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('rdvDate').min = today;
+            
+            console.log('✅ Interface initialisée');
+        });
+        
+        // Charger les patients
+        async function loadPatients() {
+            console.log('👥 Chargement des patients...');
+            
+            try {
+                const response = await fetch('/api/patients');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const select = document.getElementById('rdvPatient');
+                    select.innerHTML = '<option value="">Choisir un patient</option>';
+                    
+                    result.data.forEach(patient => {
+                        const option = document.createElement('option');
+                        option.value = patient.id;
+                        option.textContent = `${patient.prenom} ${patient.nom} - ${patient.email}`;
+                        select.appendChild(option);
+                    });
+                    
+                    console.log(`✅ ${result.data.length} patients chargés`);
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement patients:', error);
+            }
+        }
+        
+        // Charger les médecins
+        async function loadMedecins() {
+            console.log('👨‍⚕️ Chargement des médecins...');
+            
+            try {
+                const response = await fetch('/api/medecins');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const select = document.getElementById('rdvMedecin');
+                    select.innerHTML = '<option value="">Choisir un médecin</option>';
+                    
+                    result.data.forEach(medecin => {
+                        const option = document.createElement('option');
+                        option.value = medecin.id;
+                        option.textContent = `Dr. ${medecin.prenom} ${medecin.nom} - ${medecin.specialite}`;
+                        select.appendChild(option);
+                    });
+                    
+                    console.log(`✅ ${result.data.length} médecins chargés`);
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement médecins:', error);
+            }
+        }
+        
+        // Charger les RDV récents
+        async function loadRecentRdv() {
+            console.log('🔄 CHARGEMENT DES RDV RÉCENTS...');
+            
+            try {
+                // Forcer le rechargement sans cache
+                const timestamp = Date.now();
+                const response = await fetch(`/api/rendezvous?t=${timestamp}`, {
+                    method: 'GET',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                const result = await response.json();
+                
+                const container = document.getElementById('recentRdv');
+                
+                if (result.success && result.data) {
+                    console.log(`✅ ${result.data.length} RDV chargés`);
+                    
+                    // Afficher les statuts dans les logs
+                    result.data.forEach(rdv => {
+                        console.log(`   - ${rdv.id.substring(0,8)}: ${rdv.statut} (${rdv.patient.prenom} ${rdv.patient.nom})`);
+                    });
+                    
+                    // Prendre tous les RDV (pas de limite)
+                    const recentRdvs = result.data
+                        .sort((a, b) => new Date(b.dateCreation || 0) - new Date(a.dateCreation || 0));
+                    
+                    if (recentRdvs.length > 0) {
+                        container.innerHTML = recentRdvs.map(rdv => {
+                            // Couleurs selon le statut
+                            const statusColors = {
+                                'Confirmé': { bg: 'bg-green-50', border: 'border-green-200', badge: 'bg-green-100 text-green-800' },
+                                'En attente': { bg: 'bg-yellow-50', border: 'border-yellow-200', badge: 'bg-yellow-100 text-yellow-800' },
+                                'Annulé': { bg: 'bg-red-50', border: 'border-red-200', badge: 'bg-red-100 text-red-800' }
+                            };
+                            
+                            const colors = statusColors[rdv.statut] || { bg: 'bg-gray-50', border: 'border-gray-200', badge: 'bg-gray-100 text-gray-800' };
+                            
+                            return `
+                                <div class="border rounded-lg p-3 mb-3 ${colors.bg} ${colors.border}">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <h4 class="font-semibold">📅 ${rdv.date} à ${rdv.heure}</h4>
+                                            <p class="text-sm text-gray-600">
+                                                👤 ${rdv.patient.prenom} ${rdv.patient.nom} → 
+                                                👨‍⚕️ Dr. ${rdv.medecin.prenom} ${rdv.medecin.nom}
+                                            </p>
+                                            ${rdv.motif ? `<p class="text-xs text-gray-500">📝 ${rdv.motif}</p>` : ''}
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 rounded text-xs font-medium ${colors.badge}">
+                                                ${rdv.statut}
+                                            </span>
+                                            <div class="flex gap-1">
+                                                <button onclick="editRdv('${rdv.id}')" 
+                                                    class="p-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors duration-200 group"
+                                                    title="Modifier ce rendez-vous">
+                                                    <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                                    </svg>
+                                                </button>
+                                                <button onclick="deleteRdv('${rdv.id}', '${rdv.patient.prenom} ${rdv.patient.nom}', '${rdv.date}')" 
+                                                    class="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors duration-200 group"
+                                                    title="Supprimer ce rendez-vous">
+                                                    <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        console.log('✅ AFFICHAGE MIS À JOUR');
+                    } else {
+                        container.innerHTML = '<p class="text-gray-500 text-center py-4">Aucun rendez-vous récent</p>';
+                    }
+                } else {
+                    console.error('❌ Erreur API:', result);
+                    container.innerHTML = '<p class="text-red-500">Erreur de chargement</p>';
+                }
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                document.getElementById('recentRdv').innerHTML = '<p class="text-red-500">Erreur de connexion</p>';
+            }
+        }
+        
+        // Afficher un message
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = `mb-4 p-4 rounded-lg ${
+                type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
+                type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
+                type === 'info' ? 'bg-blue-50 text-blue-800 border border-blue-200' :
+                'bg-blue-50 text-blue-800 border border-blue-200'
+            }`;
+            messageDiv.textContent = text;
+            messageDiv.classList.remove('hidden');
+            
+            // Masquer après 5 secondes
+            setTimeout(() => {
+                messageDiv.classList.add('hidden');
+            }, 5000);
+        }
+        
+        // Réinitialiser le formulaire
+        function resetForm() {
+            document.getElementById('rdvForm').reset();
+            document.getElementById('message').classList.add('hidden');
+            console.log('🔄 Formulaire réinitialisé');
+        }
+        
+        // Soumettre le formulaire
+        document.getElementById('rdvForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            console.log('📝 Création/Modification RDV par admin');
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            
+            // Désactiver le bouton
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Traitement en cours...';
+            submitBtn.classList.add('opacity-50');
+            
+            // Récupérer les données
+            const patientId = document.getElementById('rdvPatient').value;
+            const medecinId = document.getElementById('rdvMedecin').value;
+            const date = document.getElementById('rdvDate').value;
+            const heure = document.getElementById('rdvHeure').value;
+            const motif = document.getElementById('rdvMotif').value;
+            const statut = document.getElementById('rdvStatut').value;
+            const notes = document.getElementById('rdvNotes').value;
+            
+            console.log('📋 Données:', { patientId, medecinId, date, heure, motif, statut });
+            
+            // Validation
+            if (!patientId || !medecinId || !date || !heure || !motif) {
+                showMessage('Veuillez remplir tous les champs obligatoires', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                submitBtn.classList.remove('opacity-50');
+                return;
+            }
+            
+            try {
+                if (editingRdvId) {
+                    // MODE MODIFICATION
+                    console.log('🔄 MODIFICATION RDV:', editingRdvId);
+                    
+                    // ÉTAPE 1: Modifier le statut avec l'endpoint spécialisé
+                    console.log('📝 Modification du statut vers:', statut);
+                    const statusResponse = await fetch(`/api/rendezvous/${editingRdvId}/statut`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ statut: statut })
+                    });
+                    
+                    const statusResult = await statusResponse.json();
+                    console.log('📊 Réponse statut:', statusResult);
+                    
+                    if (!statusResult.success) {
+                        throw new Error('Erreur modification statut: ' + (statusResult.error || statusResult.message));
+                    }
+                    
+                    console.log('✅ STATUT MODIFIÉ:', statusResult.data?.statut);
+                    
+                    // ÉTAPE 2: Modifier les autres données
+                    const formData = {
+                        dateHeure: `${date}T${heure}:00`,
+                        motif: motif,
+                        notes: notes || ''
+                    };
+                    
+                    console.log('📝 Modification des autres données...');
+                    const dataResponse = await fetch(`/api/rendezvous/${editingRdvId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const dataResult = await dataResponse.json();
+                    console.log('📊 Réponse données:', dataResult);
+                    
+                    if (!dataResult.success) {
+                        console.warn('⚠️ Erreur modification données (mais statut OK):', dataResult.error);
+                    }
+                    
+                    showMessage(`✅ Rendez-vous modifié avec succès ! Statut: "${statut}"`, 'success');
+                    cancelEdit();
+                    
+                } else {
+                    // MODE CRÉATION
+                    console.log('🆕 CRÉATION NOUVEAU RDV');
+                    
+                    const formData = {
+                        patientId: patientId,
+                        medecinId: medecinId,
+                        dateHeure: `${date}T${heure}:00`,
+                        motif: motif,
+                        statut: statut,
+                        notes: notes || ''
+                    };
+                    
+                    console.log('🚀 Envoi:', formData);
+                    
+                    const response = await fetch('/api/rendezvous', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    console.log('📥 Réponse:', result);
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || result.message || 'Erreur création');
+                    }
+                    
+                    showMessage('✅ Rendez-vous créé avec succès !', 'success');
+                    document.getElementById('rdvForm').reset();
+                }
+                
+                // Recharger la liste avec mise à jour immédiate
+                setTimeout(() => {
+                    loadRecentRdv();
+                }, 500);
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                showMessage(`❌ Erreur: ${error.message}`, 'error');
+            } finally {
+                // Réactiver le bouton
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                submitBtn.classList.remove('opacity-50');
+            }
+        });
+        
+        // Variables globales pour l'édition
+        let editingRdvId = null;
+        
+        // Fonction pour modifier un RDV
+        async function editRdv(rdvId) {
+            console.log('✏️ Modification RDV:', rdvId);
+            
+            try {
+                // Récupérer les détails du RDV
+                const response = await fetch('/api/rendezvous');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const rdv = result.data.find(r => r.id === rdvId);
+                    if (rdv) {
+                        // Remplir le formulaire avec les données existantes
+                        document.getElementById('rdvPatient').value = rdv.patient.id;
+                        document.getElementById('rdvMedecin').value = rdv.medecin.id;
+                        document.getElementById('rdvDate').value = rdv.date;
+                        document.getElementById('rdvHeure').value = rdv.heure;
+                        document.getElementById('rdvMotif').value = rdv.motif || '';
+                        document.getElementById('rdvStatut').value = rdv.statut || 'En attente';
+                        document.getElementById('rdvNotes').value = rdv.notes || '';
+                        
+                        // Changer le mode du formulaire
+                        editingRdvId = rdvId;
+                        const submitBtn = document.getElementById('submitBtn');
+                        submitBtn.textContent = '✏️ Modifier le Rendez-vous';
+                        submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                        submitBtn.classList.add('bg-orange-600', 'hover:bg-orange-700');
+                        
+                        // Ajouter un bouton d'annulation
+                        if (!document.getElementById('cancelEditBtn')) {
+                            const cancelBtn = document.createElement('button');
+                            cancelBtn.id = 'cancelEditBtn';
+                            cancelBtn.type = 'button';
+                            cancelBtn.className = 'bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 font-medium';
+                            cancelBtn.textContent = '❌ Annuler';
+                            cancelBtn.onclick = cancelEdit;
+                            
+                            const buttonContainer = submitBtn.parentElement;
+                            buttonContainer.insertBefore(cancelBtn, submitBtn.nextSibling);
+                        }
+                        
+                        // Scroll vers le formulaire
+                        document.getElementById('rdvForm').scrollIntoView({ behavior: 'smooth' });
+                        showMessage('📝 Mode modification activé. Modifiez les champs et cliquez sur "Modifier".', 'info');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                showMessage('❌ Erreur lors du chargement des données du rendez-vous', 'error');
+            }
+        }
+        
+        // Fonction pour annuler l'édition
+        function cancelEdit() {
+            editingRdvId = null;
+            
+            // Réinitialiser le formulaire
+            document.getElementById('rdvForm').reset();
+            
+            // Restaurer le bouton
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = `
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                </svg>
+                Créer le Rendez-vous
+            `;
+            submitBtn.classList.remove('bg-orange-600', 'hover:bg-orange-700');
+            submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            
+            // Supprimer le bouton d'annulation
+            const cancelBtn = document.getElementById('cancelEditBtn');
+            if (cancelBtn) {
+                cancelBtn.remove();
+            }
+            
+            document.getElementById('message').classList.add('hidden');
+            console.log('❌ Édition annulée');
+        }
+        
+        // Fonction pour supprimer un RDV
+        async function deleteRdv(rdvId, patientName, date) {
+            console.log('🗑️ Suppression RDV:', rdvId);
+            
+            // Confirmation
+            const confirmed = confirm(
+                `⚠️ ATTENTION ⚠️\n\n` +
+                `Êtes-vous sûr de vouloir supprimer ce rendez-vous ?\n\n` +
+                `👤 Patient: ${patientName}\n` +
+                `📅 Date: ${date}\n\n` +
+                `Cette action est IRRÉVERSIBLE et supprimera le rendez-vous de toutes les interfaces (admin, médecin, patient).`
+            );
+            
+            if (!confirmed) {
+                console.log('❌ Suppression annulée par l\'utilisateur');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/rendezvous/${rdvId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('✅ Rendez-vous supprimé avec succès ! Il a été retiré de toutes les interfaces.', 'success');
+                    loadRecentRdv(); // Recharger la liste
+                    
+                    // Si on était en train de modifier ce RDV, annuler l'édition
+                    if (editingRdvId === rdvId) {
+                        cancelEdit();
+                    }
+                } else {
+                    showMessage(`❌ Erreur lors de la suppression: ${result.message || 'Erreur inconnue'}`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                showMessage('❌ Erreur de connexion lors de la suppression', 'error');
+            }
+        }
+    </script>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/sidebar.js"></script>
+    <script>
+        initSidebar('calendrier');
+    </script>
+</body>
+</html>

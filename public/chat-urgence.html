@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Chat IA d'Urgence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/sidebar.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px]"></div>
+
+    <!-- Sidebar Container -->
+    <div id="sidebarContainer"></div>
+
+    <!-- Main Content -->
+    <div class="main-content min-h-screen">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-red-600 to-red-700 border-b border-red-800 px-8 py-6 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div class="animate-slide-right">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center shadow-lg">
+                            <svg class="text-white" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold text-white">Chat IA d'Urgence</h1>
+                            <p class="text-red-200 mt-1 font-medium">Assistance médicale immédiate - Non diagnostique</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="animate-slide-in">
+                    <button onclick="appelUrgence()" class="bg-red-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-900 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2 pulse-animation">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                        </svg>
+                        URGENCE 112
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="p-8 bg-gradient-to-br from-red-50 to-pink-50 min-h-screen">
+            <!-- Avertissement Important -->
+            <div class="bg-red-100 border-l-4 border-red-500 p-6 mb-8 rounded-r-lg">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-lg font-bold text-red-800">⚠️ AVERTISSEMENT IMPORTANT</h3>
+                        <div class="mt-2 text-red-700">
+                            <p class="font-semibold">Cette IA ne remplace PAS un médecin et ne pose PAS de diagnostic.</p>
+                            <p class="mt-1">Elle fournit uniquement des conseils généraux de premiers secours.</p>
+                            <p class="mt-1 font-semibold">En cas d'urgence vitale, appelez immédiatement le 112 ou le 15.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone de Chat -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 max-w-4xl mx-auto">
+                <!-- En-tête du Chat -->
+                <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-2xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold">Assistant IA Médical</h2>
+                            <p class="text-blue-200">En ligne - Prêt à vous aider</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages du Chat -->
+                <div id="chatMessages" class="p-6 h-96 overflow-y-auto bg-gray-50">
+                    <div class="space-y-4">
+                        <!-- Message d'accueil -->
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="text-white" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 shadow-sm border max-w-md">
+                                <p class="text-gray-800">👋 Bonjour ! Je suis votre assistant IA médical.</p>
+                                <p class="text-gray-800 mt-2">Décrivez-moi vos symptômes et je vous poserai quelques questions pour mieux vous orienter.</p>
+                                <p class="text-sm text-red-600 mt-2 font-semibold">⚠️ Rappel : Je ne pose pas de diagnostic médical.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zone de Saisie -->
+                <div class="p-6 border-t border-gray-200 bg-white rounded-b-2xl">
+                    <div class="flex gap-3">
+                        <input type="text" id="messageInput" placeholder="Décrivez vos symptômes..." 
+                               class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               onkeypress="if(event.key==='Enter') envoyerMessage()">
+                        <button onclick="envoyerMessage()" 
+                                class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold">
+                            Envoyer
+                        </button>
+                    </div>
+                    
+                    <!-- Boutons d'Actions Rapides -->
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <button onclick="envoyerMessageRapide('J\'ai mal à la tête')" 
+                                class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition text-sm">
+                            Mal de tête
+                        </button>
+                        <button onclick="envoyerMessageRapide('J\'ai de la fièvre')" 
+                                class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition text-sm">
+                            Fièvre
+                        </button>
+                        <button onclick="envoyerMessageRapide('J\'ai mal au ventre')" 
+                                class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition text-sm">
+                            Mal de ventre
+                        </button>
+                        <button onclick="envoyerMessageRapide('Je me sens faible')" 
+                                class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition text-sm">
+                            Faiblesse
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons d'Urgence -->
+            <div class="mt-8 max-w-4xl mx-auto">
+                <div class="bg-red-600 text-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-center">🚨 EN CAS D'URGENCE VITALE 🚨</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="appelUrgence()" 
+                                class="bg-red-800 hover:bg-red-900 text-white px-6 py-4 rounded-lg font-bold transition text-lg flex items-center justify-center gap-2">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                            </svg>
+                            APPELER LE 112
+                        </button>
+                        <button onclick="appelSamu()" 
+                                class="bg-red-800 hover:bg-red-900 text-white px-6 py-4 rounded-lg font-bold transition text-lg flex items-center justify-center gap-2">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                            </svg>
+                            APPELER LE 15 (SAMU)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/auth.js"></script>
+    <script src="/js/sidebar.js"></script>
+    <script>
+        let conversationEtape = 'initial';
+        let donneesPatient = {};
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Charger la sidebar patient
+            document.getElementById('sidebarContainer').innerHTML = createPatientSidebar('chat-urgence');
+        });
+
+        // Créer la sidebar patient avec l'option Chat IA
+        function createPatientSidebar(activePage) {
+            return `
+                <aside id="sidebar" class="sidebar w-64 bg-gradient-to-b from-sky-800 to-sky-900 text-white flex-shrink-0 shadow-2xl fixed left-0 top-0 h-screen overflow-y-auto transition-transform duration-300 z-50">
+                    <!-- En-tête -->
+                    <div class="p-6 border-b border-white border-opacity-10">
+                        <div class="flex items-center gap-3 animate-slide-right">
+                            <div class="bg-white p-3 rounded-2xl shadow-lg">
+                                <svg class="text-sky-600" width="28" height="28" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-bold tracking-tight">SGSP</h1>
+                                <p class="text-xs text-blue-200 mt-0.5 font-medium">Espace Patient</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Patient -->
+                    <nav class="p-4 space-y-2">
+                        <div class="text-xs font-semibold text-blue-200 uppercase tracking-wider px-4 py-2 mb-2">
+                            Mon Espace Santé
+                        </div>
+                        
+                        <a href="/patient-dashboard.html" class="sidebar-link ${activePage === 'dashboard' ? 'active' : ''} flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center group-hover:bg-opacity-20 transition">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                                </svg>
+                            </div>
+                            <span>Tableau de Bord</span>
+                        </a>
+
+                        <a href="/chat-urgence.html" class="sidebar-link ${activePage === 'chat-urgence' ? 'active' : ''} flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-white bg-opacity-10 flex items-center justify-center group-hover:bg-opacity-20 transition">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                            </div>
+                            <span>🚨 Chat IA d'Urgence</span>
+                        </a>
+                    </nav>
+
+                    <!-- Profil Patient -->
+                    <div class="mt-auto p-4 border-t border-white border-opacity-10">
+                        <div class="flex items-center gap-3 px-4 py-3 bg-white bg-opacity-10 rounded-xl">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                P
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-semibold text-white truncate">Patient</div>
+                                <div class="text-xs text-blue-200">Espace Personnel</div>
+                            </div>
+                            <button onclick="logout()" class="p-2 text-blue-200 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition" title="Déconnexion">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Overlay pour mobile -->
+                <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
+
+                <!-- Bouton Hamburger -->
+                <button id="hamburgerBtn" onclick="toggleSidebar()" class="fixed top-4 left-4 z-50 bg-sky-600 text-white p-3 rounded-2xl shadow-lg hover:bg-sky-700 transition lg:hidden">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </button>
+            `;
+        }
+
+        // Envoyer un message
+        function envoyerMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Ajouter le message du patient
+            ajouterMessage(message, 'patient');
+            input.value = '';
+            
+            // Traiter la réponse de l'IA
+            setTimeout(() => {
+                traiterReponseIA(message);
+            }, 1000);
+        }
+
+        // Envoyer un message rapide
+        function envoyerMessageRapide(message) {
+            ajouterMessage(message, 'patient');
+            setTimeout(() => {
+                traiterReponseIA(message);
+            }, 1000);
+        }
+
+        // Ajouter un message au chat
+        function ajouterMessage(message, type) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            
+            if (type === 'patient') {
+                messageDiv.innerHTML = `
+                    <div class="flex items-start gap-3 justify-end">
+                        <div class="bg-blue-600 text-white rounded-lg p-4 shadow-sm max-w-md">
+                            <p>${message}</p>
+                        </div>
+                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="text-white" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="text-white" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm border max-w-md">
+                            ${message}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Traiter la réponse de l'IA
+        function traiterReponseIA(messagePatient) {
+            let reponse = '';
+            
+            // Logique simple de réponse basée sur les mots-clés
+            const messageLower = messagePatient.toLowerCase();
+            
+            if (messageLower.includes('mal de tête') || messageLower.includes('migraine') || messageLower.includes('céphalée')) {
+                reponse = `
+                    <p class="text-gray-800">Je comprends que vous avez mal à la tête. Quelques questions :</p>
+                    <p class="text-gray-800 mt-2">• Sur une échelle de 1 à 10, quelle est l'intensité de la douleur ?</p>
+                    <p class="text-gray-800">• Depuis combien de temps avez-vous mal ?</p>
+                    <p class="text-gray-800">• Avez-vous de la fièvre ?</p>
+                    <p class="text-gray-800 mt-2"><strong>Conseils généraux :</strong></p>
+                    <p class="text-gray-800">• Reposez-vous dans un endroit calme et sombre</p>
+                    <p class="text-gray-800">• Buvez de l'eau</p>
+                    <p class="text-gray-800">• Vous pouvez prendre du paracétamol selon la posologie</p>
+                    <p class="text-red-600 font-semibold mt-2">⚠️ Si la douleur est très intense, soudaine, ou accompagnée de fièvre élevée, consultez immédiatement.</p>
+                `;
+            } else if (messageLower.includes('fièvre') || messageLower.includes('température')) {
+                reponse = `
+                    <p class="text-gray-800">Vous mentionnez avoir de la fièvre. Questions importantes :</p>
+                    <p class="text-gray-800 mt-2">• Quelle est votre température exacte ?</p>
+                    <p class="text-gray-800">• Depuis quand avez-vous de la fièvre ?</p>
+                    <p class="text-gray-800">• Avez-vous d'autres symptômes (frissons, courbatures, maux de gorge) ?</p>
+                    <p class="text-gray-800 mt-2"><strong>Conseils généraux :</strong></p>
+                    <p class="text-gray-800">• Buvez beaucoup d'eau</p>
+                    <p class="text-gray-800">• Reposez-vous</p>
+                    <p class="text-gray-800">• Paracétamol selon la posologie pour faire baisser la fièvre</p>
+                    <p class="text-red-600 font-semibold mt-2">⚠️ Si la fièvre dépasse 39°C, persiste plus de 3 jours, ou s'accompagne de difficultés respiratoires, consultez rapidement.</p>
+                `;
+            } else if (messageLower.includes('mal au ventre') || messageLower.includes('douleur abdominale') || messageLower.includes('estomac')) {
+                reponse = `
+                    <p class="text-gray-800">Vous avez des douleurs abdominales. Précisions nécessaires :</p>
+                    <p class="text-gray-800 mt-2">• Où exactement avez-vous mal ? (haut, bas, côté droit/gauche)</p>
+                    <p class="text-gray-800">• La douleur est-elle constante ou par crises ?</p>
+                    <p class="text-gray-800">• Avez-vous des nausées, vomissements, diarrhée ?</p>
+                    <p class="text-gray-800 mt-2"><strong>Conseils généraux :</strong></p>
+                    <p class="text-gray-800">• Restez à jeun temporairement</p>
+                    <p class="text-gray-800">• Buvez de petites quantités d'eau</p>
+                    <p class="text-gray-800">• Évitez les aliments gras ou épicés</p>
+                    <p class="text-red-600 font-semibold mt-2">⚠️ Si la douleur est très intense, localisée en bas à droite, ou accompagnée de fièvre, consultez en urgence.</p>
+                `;
+            } else if (messageLower.includes('faible') || messageLower.includes('fatigue') || messageLower.includes('épuisé')) {
+                reponse = `
+                    <p class="text-gray-800">Vous vous sentez faible. Questions importantes :</p>
+                    <p class="text-gray-800 mt-2">• Cette faiblesse est-elle soudaine ou progressive ?</p>
+                    <p class="text-gray-800">• Avez-vous des vertiges ou des étourdissements ?</p>
+                    <p class="text-gray-800">• Avez-vous mangé et bu normalement aujourd'hui ?</p>
+                    <p class="text-gray-800 mt-2"><strong>Conseils généraux :</strong></p>
+                    <p class="text-gray-800">• Asseyez-vous ou allongez-vous</p>
+                    <p class="text-gray-800">• Buvez de l'eau ou une boisson sucrée</p>
+                    <p class="text-gray-800">• Mangez quelque chose de léger si possible</p>
+                    <p class="text-red-600 font-semibold mt-2">⚠️ Si vous avez des douleurs thoraciques, des difficultés respiratoires, ou si la faiblesse est très soudaine, appelez le 15 immédiatement.</p>
+                `;
+            } else {
+                reponse = `
+                    <p class="text-gray-800">Je comprends vos préoccupations. Pour mieux vous aider, pouvez-vous me préciser :</p>
+                    <p class="text-gray-800 mt-2">• Quels sont exactement vos symptômes ?</p>
+                    <p class="text-gray-800">• Depuis quand les ressentez-vous ?</p>
+                    <p class="text-gray-800">• Sur une échelle de 1 à 10, quelle est l'intensité ?</p>
+                    <p class="text-gray-800">• Avez-vous de la fièvre ?</p>
+                    <p class="text-red-600 font-semibold mt-2">⚠️ Rappel : Je ne peux pas poser de diagnostic. En cas de doute, consultez un professionnel de santé.</p>
+                `;
+            }
+            
+            ajouterMessage(reponse, 'ia');
+        }
+
+        // Appeler les services d'urgence
+        function appelUrgence() {
+            if (confirm('Vous allez être redirigé vers le service d\'urgence 112.\n\nEn cas d\'urgence vitale immédiate, raccrochez et composez directement le 112 sur votre téléphone.\n\nContinuer ?')) {
+                window.open('tel:112', '_blank');
+            }
+        }
+
+        function appelSamu() {
+            if (confirm('Vous allez être redirigé vers le SAMU (15).\n\nEn cas d\'urgence vitale immédiate, raccrochez et composez directement le 15 sur votre téléphone.\n\nContinuer ?')) {
+                window.open('tel:15', '_blank');
+            }
+        }
+
+        // Déconnexion
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('isAuthenticated');
+            window.location.href = '/login-patient.html';
+        }
+
+        // Toggle sidebar pour mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+    </script>
+
+    <style>
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+        
+        .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</body>
+</html>

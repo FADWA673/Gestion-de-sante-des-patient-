@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Gestion des Comptes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .animate-slide-in { animation: slideIn 0.5s ease-out; }
+        .animate-slide-right { animation: slideRight 0.6s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideRight { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        .modal-backdrop { backdrop-filter: blur(4px); }
+        .loading-spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .password-display { 
+            font-family: 'Courier New', monospace; 
+            background: #f3f4f6; 
+            border: 2px dashed #d1d5db; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            color: #1f2937;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[300px]"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 flex items-center gap-4">
+            <div class="loading-spinner w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full"></div>
+            <span class="text-gray-700 font-medium">Chargement...</span>
+        </div>
+    </div>
+
+    <!-- Sidebar Container -->
+    <div id="sidebarContainer"></div>
+
+    <!-- Main Content -->
+    <div class="main-content min-h-screen">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-sky-800 to-sky-900 border-b border-sky-700 px-8 py-6 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div class="animate-slide-right">
+                    <div class="flex items-center gap-4 mb-2">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center shadow-lg">
+                            <svg class="text-white" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1L9 7V9C9 10.1 9.9 11 11 11V16L7.5 15.5C6.7 15.4 6 16 6 16.8V18.2C6 18.7 6.4 19.2 6.8 19.3L11 20V23H13V20L17.2 19.3C17.6 19.2 18 18.7 18 18.2V16.8C18 16 17.3 15.4 16.5 15.5L13 16V11C14.1 11 15 10.1 15 9H21Z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold text-white">Gestion des Comptes</h1>
+                            <p class="text-sky-200 mt-1 font-medium">Administration et réinitialisation des mots de passe</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="animate-slide-in">
+                    <button onclick="refreshData()" class="bg-white text-sky-800 px-6 py-3 rounded-xl font-semibold hover:bg-sky-50 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="p-8 bg-gradient-to-br from-sky-50 to-blue-50 min-h-screen">
+            <!-- Actions rapides -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center">
+                            <svg class="text-purple-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-1 16H9V7h9v14z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Patients Existants</h3>
+                            <p class="text-gray-600">Créer compte pour patient</p>
+                        </div>
+                    </div>
+                    <button onclick="openExistingPatientsModal()" class="w-full bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-all duration-300">
+                        Voir Patients
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center">
+                            <svg class="text-orange-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Médecins Existants</h3>
+                            <p class="text-gray-600">Créer compte pour médecin</p>
+                        </div>
+                    </div>
+                    <button onclick="openExistingMedecinsModal()" class="w-full bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-all duration-300">
+                        Voir Médecins
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center">
+                            <svg class="text-red-600" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Réinitialiser MDP</h3>
+                            <p class="text-gray-600">Générer nouveaux mots de passe</p>
+                        </div>
+                    </div>
+                    <button onclick="openResetPasswordsModal()" class="w-full bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-700 transition-all duration-300">
+                        Réinitialiser Tout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="text-blue-600 w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Total Utilisateurs</p>
+                            <p id="totalUsers" class="text-xl font-bold text-gray-900">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg class="text-purple-600 w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Patients</p>
+                            <p id="totalPatients" class="text-xl font-bold text-gray-900">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="text-green-600 w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Médecins</p>
+                            <p id="totalMedecins" class="text-xl font-bold text-gray-900">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="text-red-600 w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Admins</p>
+                            <p id="totalAdmins" class="text-xl font-bold text-gray-900">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des utilisateurs -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Utilisateurs du Système</h2>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                            <span id="userCount">0 utilisateurs</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="openCreatePatientModal()" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-sm">
+                                + Nouveau Patient
+                            </button>
+                            <button onclick="openCreateMedecinModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition text-sm">
+                                + Nouveau Médecin
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Utilisateur</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Rôle</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Email</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Date de création</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Les utilisateurs seront chargés ici -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Modal Réinitialiser Mots de Passe -->
+    <div id="resetPasswordsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="text-red-600 w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900">Réinitialiser les Mots de Passe</h3>
+                    </div>
+                    <button onclick="closeResetPasswordsModal()" class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+                    <div class="flex items-start gap-3">
+                        <svg class="text-yellow-600 w-6 h-6 mt-0.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                        </svg>
+                        <div>
+                            <h4 class="font-semibold text-yellow-800 mb-2">⚠️ Attention - Réinitialisation des Mots de Passe</h4>
+                            <p class="text-yellow-700 text-sm">
+                                Cette action va générer de nouveaux mots de passe aléatoirement pour tous les utilisateurs sélectionnés. 
+                                Les anciens mots de passe seront perdus définitivement. Assurez-vous de noter les nouveaux mots de passe.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 mb-6">
+                    <button onclick="generateAllPasswords()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-700 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                        </svg>
+                        Générer Tous les Mots de Passe
+                    </button>
+                    <button onclick="copyAllPasswords()" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                        </svg>
+                        Copier Tout
+                    </button>
+                </div>
+
+                <div id="passwordResetList" class="space-y-4">
+                    <!-- Les utilisateurs avec nouveaux mots de passe seront affichés ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Créer Patient -->
+    <div id="createPatientModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold text-gray-900">Créer un Compte Patient</h3>
+                    <button onclick="closeCreatePatientModal()" class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <form id="createPatientForm" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nom d'utilisateur *</label>
+                        <input type="text" name="username" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Mot de passe *</label>
+                        <div class="relative">
+                            <input type="password" name="password" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <button type="button" onclick="generatePassword('createPatientForm', 'password')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600 hover:text-purple-800">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nom *</label>
+                        <input type="text" name="nom" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Prénom *</label>
+                        <input type="text" name="prenom" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                        <input type="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Téléphone</label>
+                        <input type="tel" name="telephone" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeCreatePatientModal()" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition">
+                        Annuler
+                    </button>
+                    <button type="submit" class="flex-1 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition">
+                        Créer le Compte
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Créer Médecin -->
+    <div id="createMedecinModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold text-gray-900">Créer un Compte Médecin</h3>
+                    <button onclick="closeCreateMedecinModal()" class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <form id="createMedecinForm" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nom d'utilisateur *</label>
+                        <input type="text" name="username" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Mot de passe *</label>
+                        <div class="relative">
+                            <input type="password" name="password" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <button type="button" onclick="generatePassword('createMedecinForm', 'password')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 hover:text-green-800">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nom *</label>
+                        <input type="text" name="nom" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Prénom *</label>
+                        <input type="text" name="prenom" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                        <input type="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Spécialité *</label>
+                        <input type="text" name="specialite" required placeholder="Ex: Cardiologie, Pédiatrie..." class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeCreateMedecinModal()" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition">
+                        Annuler
+                    </button>
+                    <button type="submit" class="flex-1 px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition">
+                        Créer le Compte
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Patients Existants -->
+    <div id="existingPatientsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold text-gray-900">Patients sans Compte Utilisateur</h3>
+                    <button onclick="closeExistingPatientsModal()" class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="existingPatientsList" class="space-y-4">
+                    <!-- Les patients seront chargés ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Médecins Existants -->
+    <div id="existingMedecinsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold text-gray-900">Médecins sans Compte Utilisateur</h3>
+                    <button onclick="closeExistingMedecinsModal()" class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="existingMedecinsList" class="space-y-4">
+                    <!-- Les médecins seront chargés ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Créer Compte pour Patient Existant -->
+    <div id="createAccountPatientModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-gray-900">Créer Compte Utilisateur</h3>
+                    <button onclick="closeCreateAccountPatientModal()" class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <form id="createAccountPatientForm" class="p-6 space-y-4">
+                <input type="hidden" id="selectedPatientId" name="patientId">
+                
+                <div id="selectedPatientInfo" class="bg-purple-50 p-4 rounded-xl mb-4">
+                    <!-- Info du patient sélectionné -->
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nom d'utilisateur *</label>
+                    <input type="text" name="username" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Mot de passe *</label>
+                    <div class="relative">
+                        <input type="password" name="password" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <button type="button" onclick="generatePassword('createAccountPatientForm', 'password')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600 hover:text-purple-800">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeCreateAccountPatientModal()" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition">
+                        Annuler
+                    </button>
+                    <button type="submit" class="flex-1 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition">
+                        Créer le Compte
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Créer Compte pour Médecin Existant -->
+    <div id="createAccountMedecinModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-gray-900">Créer Compte Utilisateur</h3>
+                    <button onclick="closeCreateAccountMedecinModal()" class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <form id="createAccountMedecinForm" class="p-6 space-y-4">
+                <input type="hidden" id="selectedMedecinId" name="medecinId">
+                
+                <div id="selectedMedecinInfo" class="bg-green-50 p-4 rounded-xl mb-4">
+                    <!-- Info du médecin sélectionné -->
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nom d'utilisateur *</label>
+                    <input type="text" name="username" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Mot de passe *</label>
+                    <div class="relative">
+                        <input type="password" name="password" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <button type="button" onclick="generatePassword('createAccountMedecinForm', 'password')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 hover:text-green-800">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeCreateAccountMedecinModal()" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition">
+                        Annuler
+                    </button>
+                    <button type="submit" class="flex-1 px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition">
+                        Créer le Compte
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        // Variables globales
+        let allUsers = [];
+        let isLoading = false;
+        let generatedPasswords = {};
+
+        // Vérifier l'authentification au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAuth()) return;
+            
+            // Charger la sidebar
+            document.getElementById('sidebarContainer').innerHTML = createSidebar('gestion-comptes');
+            
+            // Charger les données initiales
+            initializePage();
+        });
+
+        // Initialiser la page
+        async function initializePage() {
+            showLoading(true);
+            try {
+                await loadUsers();
+                updateStatistics();
+            } catch (error) {
+                console.error('Erreur initialisation:', error);
+                showNotification('Erreur lors du chargement initial', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Afficher/masquer le loading
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+            isLoading = show;
+        }
+
+        // Actualiser toutes les données
+        async function refreshData() {
+            if (isLoading) return;
+            
+            showLoading(true);
+            try {
+                await loadUsers();
+                updateStatistics();
+                showNotification('Données actualisées avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur actualisation:', error);
+                showNotification('Erreur lors de l\'actualisation', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Générer un mot de passe aléatoirement
+        function generateRandomPassword(length = 12) {
+            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+            let password = "";
+            for (let i = 0; i < length; i++) {
+                password += charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+            return password;
+        }
+
+        // Générer un mot de passe pour un champ spécifique
+        function generatePassword(formId, fieldName) {
+            const form = document.getElementById(formId);
+            const field = form.querySelector(`[name="${fieldName}"]`);
+            const newPassword = generateRandomPassword();
+            field.value = newPassword;
+            field.type = 'text'; // Afficher temporairement le mot de passe
+            
+            // Remettre en type password après 3 secondes
+            setTimeout(() => {
+                field.type = 'password';
+            }, 3000);
+            
+            showNotification('Mot de passe généré automatiquement', 'success');
+        }
+
+        // Charger la liste des utilisateurs
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/auth/users');
+                const result = await response.json();
+                
+                if (result.success) {
+                    allUsers = result.data || [];
+                    displayUsers(allUsers);
+                    document.getElementById('userCount').textContent = `${result.count || 0} utilisateur${(result.count || 0) > 1 ? 's' : ''}`;
+                } else {
+                    throw new Error(result.message || 'Erreur lors du chargement');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur lors du chargement des utilisateurs', 'error');
+                allUsers = [];
+                displayUsers([]);
+            }
+        }
+
+        // Mettre à jour les statistiques
+        function updateStatistics() {
+            const stats = {
+                total: allUsers.length,
+                patients: allUsers.filter(u => u.role === 'patient').length,
+                medecins: allUsers.filter(u => u.role === 'medecin').length,
+                admins: allUsers.filter(u => u.role === 'admin').length
+            };
+
+            document.getElementById('totalUsers').textContent = stats.total;
+            document.getElementById('totalPatients').textContent = stats.patients;
+            document.getElementById('totalMedecins').textContent = stats.medecins;
+            document.getElementById('totalAdmins').textContent = stats.admins;
+        }
+        // Afficher les utilisateurs dans le tableau
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (!users || users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center gap-2">
+                                <svg class="w-12 h-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                                </svg>
+                                <p class="font-medium">Aucun utilisateur trouvé</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors';
+                
+                const roleConfig = {
+                    'admin': { color: 'bg-red-100 text-red-800', text: 'Administrateur', icon: '🛡️' },
+                    'medecin': { color: 'bg-green-100 text-green-800', text: 'Médecin', icon: '👨‍⚕️' },
+                    'patient': { color: 'bg-blue-100 text-blue-800', text: 'Patient', icon: '👤' }
+                };
+                
+                const config = roleConfig[user.role] || { color: 'bg-gray-100 text-gray-800', text: user.role, icon: '❓' };
+                
+                row.innerHTML = `
+                    <td class="py-4 px-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center shadow-sm">
+                                <span class="text-sm font-bold text-gray-600">${(user.prenom?.[0] || '?')}${(user.nom?.[0] || '?')}</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">${user.prenom || 'N/A'} ${user.nom || 'N/A'}</div>
+                                <div class="text-sm text-gray-500">@${user.username || 'N/A'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${config.color} flex items-center gap-1 w-fit">
+                            <span>${config.icon}</span>
+                            ${config.text}
+                        </span>
+                    </td>
+                    <td class="py-4 px-4 text-gray-600">${user.email || 'N/A'}</td>
+                    <td class="py-4 px-4 text-gray-600">${user.dateCreation ? new Date(user.dateCreation).toLocaleDateString('fr-FR') : 'N/A'}</td>
+                    <td class="py-4 px-4">
+                        <div class="flex items-center gap-2">
+                            <button onclick="resetUserPassword('${user.id}', '${(user.prenom || '') + ' ' + (user.nom || '')}', '${user.username}')" class="text-orange-600 hover:text-orange-800 text-sm font-semibold px-3 py-1 rounded-lg hover:bg-orange-50 transition-colors flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                                </svg>
+                                Réinitialiser MDP
+                            </button>
+                            ${user.role !== 'admin' ? `
+                                <button onclick="deleteUser('${user.id}', '${(user.prenom || '') + ' ' + (user.nom || '')}', '${user.role}')" class="text-red-600 hover:text-red-800 text-sm font-semibold px-3 py-1 rounded-lg hover:bg-red-50 transition-colors flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                    </svg>
+                                    Supprimer
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Réinitialiser le mot de passe d'un utilisateur
+        async function resetUserPassword(userId, userName, username) {
+            if (isLoading) return;
+            
+            const confirmed = confirm(`🔐 RÉINITIALISATION MOT DE PASSE\n\n` +
+                `Utilisateur : ${userName} (@${username})\n\n` +
+                `Cette action va :\n` +
+                `• Générer un nouveau mot de passe aléatoirement\n` +
+                `• Remplacer l'ancien mot de passe\n` +
+                `• Vous afficher le nouveau mot de passe\n\n` +
+                `Voulez-vous continuer ?`);
+            
+            if (!confirmed) return;
+
+            showLoading(true);
+            try {
+                const newPassword = generateRandomPassword();
+                
+                const response = await fetch(`/api/auth/reset-password/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ newPassword })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Afficher le nouveau mot de passe dans une alerte
+                    alert(`✅ MOT DE PASSE RÉINITIALISÉ\n\n` +
+                        `Utilisateur : ${userName}\n` +
+                        `Nom d'utilisateur : ${username}\n` +
+                        `Nouveau mot de passe : ${newPassword}\n\n` +
+                        `⚠️ IMPORTANT : Notez ce mot de passe maintenant !\n` +
+                        `Il ne sera plus affiché après fermeture de cette fenêtre.`);
+                    
+                    showNotification(`✅ Mot de passe réinitialisé pour ${userName}`, 'success');
+                } else {
+                    showNotification(`❌ Erreur: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Erreur réinitialisation mot de passe:', error);
+                showNotification('❌ Erreur de connexion lors de la réinitialisation', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Gestion des modals - Réinitialisation des mots de passe
+        function openResetPasswordsModal() {
+            document.getElementById('resetPasswordsModal').classList.remove('hidden');
+            displayPasswordResetList();
+        }
+
+        function closeResetPasswordsModal() {
+            document.getElementById('resetPasswordsModal').classList.add('hidden');
+            generatedPasswords = {};
+        }
+
+        // Afficher la liste pour réinitialisation des mots de passe
+        function displayPasswordResetList() {
+            const container = document.getElementById('passwordResetList');
+            
+            if (!allUsers || allUsers.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-gray-500">Aucun utilisateur trouvé</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = allUsers.map(user => {
+                const roleConfig = {
+                    'admin': { color: 'bg-red-100 text-red-800', text: 'Administrateur', icon: '🛡️' },
+                    'medecin': { color: 'bg-green-100 text-green-800', text: 'Médecin', icon: '👨‍⚕️' },
+                    'patient': { color: 'bg-blue-100 text-blue-800', text: 'Patient', icon: '👤' }
+                };
+                
+                const config = roleConfig[user.role] || { color: 'bg-gray-100 text-gray-800', text: user.role, icon: '❓' };
+                
+                return `
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-bold text-gray-600">${(user.prenom?.[0] || '?')}${(user.nom?.[0] || '?')}</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">${user.prenom || 'N/A'} ${user.nom || 'N/A'}</h4>
+                                    <p class="text-sm text-gray-600">@${user.username || 'N/A'}</p>
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold ${config.color} flex items-center gap-1 w-fit mt-1">
+                                        <span>${config.icon}</span>
+                                        ${config.text}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="generateSinglePassword('${user.id}')" class="bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-700 transition text-sm">
+                                    Générer MDP
+                                </button>
+                            </div>
+                        </div>
+                        <div id="password-${user.id}" class="hidden mt-4">
+                            <!-- Le mot de passe généré sera affiché ici -->
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Générer un mot de passe pour un utilisateur spécifique
+        async function generateSinglePassword(userId) {
+            if (isLoading) return;
+            
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            showLoading(true);
+            try {
+                const newPassword = generateRandomPassword();
+                
+                const response = await fetch(`/api/auth/reset-password/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ newPassword })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    generatedPasswords[userId] = {
+                        username: user.username,
+                        password: newPassword,
+                        name: `${user.prenom} ${user.nom}`
+                    };
+                    
+                    // Afficher le mot de passe dans l'interface
+                    const passwordDiv = document.getElementById(`password-${userId}`);
+                    passwordDiv.innerHTML = `
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-semibold text-green-800 mb-1">✅ Nouveau mot de passe généré :</p>
+                                    <div class="password-display">${newPassword}</div>
+                                </div>
+                                <button onclick="copyPassword('${newPassword}')" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition">
+                                    Copier
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    passwordDiv.classList.remove('hidden');
+                    
+                    showNotification(`✅ Mot de passe généré pour ${user.prenom} ${user.nom}`, 'success');
+                } else {
+                    showNotification(`❌ Erreur: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Erreur génération mot de passe:', error);
+                showNotification('❌ Erreur de connexion', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Générer tous les mots de passe
+        async function generateAllPasswords() {
+            if (isLoading) return;
+            
+            const confirmed = confirm(`🔐 RÉINITIALISATION GLOBALE\n\n` +
+                `Cette action va générer de nouveaux mots de passe pour TOUS les utilisateurs (${allUsers.length} comptes).\n\n` +
+                `⚠️ ATTENTION : Cette action est irréversible !\n\n` +
+                `Voulez-vous vraiment continuer ?`);
+            
+            if (!confirmed) return;
+
+            showLoading(true);
+            generatedPasswords = {};
+            
+            try {
+                for (const user of allUsers) {
+                    const newPassword = generateRandomPassword();
+                    
+                    const response = await fetch(`/api/auth/reset-password/${user.id}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ newPassword })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        generatedPasswords[user.id] = {
+                            username: user.username,
+                            password: newPassword,
+                            name: `${user.prenom} ${user.nom}`
+                        };
+                        
+                        // Afficher le mot de passe dans l'interface
+                        const passwordDiv = document.getElementById(`password-${user.id}`);
+                        if (passwordDiv) {
+                            passwordDiv.innerHTML = `
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-semibold text-green-800 mb-1">✅ Nouveau mot de passe :</p>
+                                            <div class="password-display">${newPassword}</div>
+                                        </div>
+                                        <button onclick="copyPassword('${newPassword}')" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition">
+                                            Copier
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                            passwordDiv.classList.remove('hidden');
+                        }
+                    }
+                }
+                
+                showNotification(`✅ Tous les mots de passe ont été réinitialisés (${Object.keys(generatedPasswords).length} comptes)`, 'success');
+            } catch (error) {
+                console.error('Erreur génération globale:', error);
+                showNotification('❌ Erreur lors de la génération globale', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Copier un mot de passe
+        function copyPassword(password) {
+            navigator.clipboard.writeText(password).then(() => {
+                showNotification('Mot de passe copié dans le presse-papiers', 'success');
+            }).catch(() => {
+                showNotification('Erreur lors de la copie', 'error');
+            });
+        }
+
+        // Copier tous les mots de passe générés
+        function copyAllPasswords() {
+            if (Object.keys(generatedPasswords).length === 0) {
+                showNotification('Aucun mot de passe généré à copier', 'warning');
+                return;
+            }
+            
+            let text = "=== MOTS DE PASSE RÉINITIALISÉS ===\n\n";
+            
+            Object.values(generatedPasswords).forEach(user => {
+                text += `Nom: ${user.name}\n`;
+                text += `Utilisateur: ${user.username}\n`;
+                text += `Mot de passe: ${user.password}\n`;
+                text += "------------------------\n";
+            });
+            
+            text += `\nTotal: ${Object.keys(generatedPasswords).length} comptes réinitialisés\n`;
+            text += `Date: ${new Date().toLocaleString('fr-FR')}`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification(`Tous les mots de passe copiés (${Object.keys(generatedPasswords).length} comptes)`, 'success');
+            }).catch(() => {
+                showNotification('Erreur lors de la copie', 'error');
+            });
+        }
+
+        // Gestion des modals - Patients
+        function openCreatePatientModal() {
+            document.getElementById('createPatientModal').classList.remove('hidden');
+        }
+
+        function closeCreatePatientModal() {
+            document.getElementById('createPatientModal').classList.add('hidden');
+            document.getElementById('createPatientForm').reset();
+        }
+
+        // Gestion des modals - Médecins
+        function openCreateMedecinModal() {
+            document.getElementById('createMedecinModal').classList.remove('hidden');
+        }
+
+        function closeCreateMedecinModal() {
+            document.getElementById('createMedecinModal').classList.add('hidden');
+            document.getElementById('createMedecinForm').reset();
+        }
+
+        // Gestion des modals - Patients existants
+        async function openExistingPatientsModal() {
+            document.getElementById('existingPatientsModal').classList.remove('hidden');
+            await loadPatientsWithoutAccount();
+        }
+
+        function closeExistingPatientsModal() {
+            document.getElementById('existingPatientsModal').classList.add('hidden');
+        }
+
+        // Gestion des modals - Médecins existants
+        async function openExistingMedecinsModal() {
+            document.getElementById('existingMedecinsModal').classList.remove('hidden');
+            await loadMedecinsWithoutAccount();
+        }
+
+        function closeExistingMedecinsModal() {
+            document.getElementById('existingMedecinsModal').classList.add('hidden');
+        }
+
+        // Modal création compte patient existant
+        function openCreateAccountPatientModal(patient) {
+            document.getElementById('selectedPatientId').value = patient.id;
+            document.getElementById('selectedPatientInfo').innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                        <span class="text-purple-600 font-bold">${(patient.prenom?.[0] || '?')}${(patient.nom?.[0] || '?')}</span>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900">${patient.prenom || 'N/A'} ${patient.nom || 'N/A'}</h4>
+                        <p class="text-sm text-purple-600 font-medium">📧 Email: ${patient.email || 'Pas d\'email'}</p>
+                        <p class="text-xs text-gray-500">📞 ${patient.telephone || 'Pas de téléphone'}</p>
+                        <div class="mt-2 p-2 bg-purple-50 rounded-lg">
+                            <p class="text-xs text-purple-700 font-medium">ℹ️ L'email ci-dessus sera automatiquement utilisé pour le compte</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('createAccountPatientModal').classList.remove('hidden');
+        }
+
+        function closeCreateAccountPatientModal() {
+            document.getElementById('createAccountPatientModal').classList.add('hidden');
+            document.getElementById('createAccountPatientForm').reset();
+        }
+
+        // Modal création compte médecin existant
+        function openCreateAccountMedecinModal(medecin) {
+            document.getElementById('selectedMedecinId').value = medecin.id;
+            document.getElementById('selectedMedecinInfo').innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <span class="text-green-600 font-bold">${(medecin.prenom?.[0] || '?')}${(medecin.nom?.[0] || '?')}</span>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900">Dr. ${medecin.prenom || 'N/A'} ${medecin.nom || 'N/A'}</h4>
+                        <p class="text-sm text-green-600 font-medium">🏥 ${medecin.specialite || 'Spécialité non définie'}</p>
+                        <p class="text-sm text-blue-600 font-medium">📧 Email: ${medecin.email || 'Pas d\'email'}</p>
+                        <div class="mt-2 p-2 bg-green-50 rounded-lg">
+                            <p class="text-xs text-green-700 font-medium">ℹ️ L'email ci-dessus sera automatiquement utilisé pour le compte</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('createAccountMedecinModal').classList.remove('hidden');
+        }
+
+        function closeCreateAccountMedecinModal() {
+            document.getElementById('createAccountMedecinModal').classList.add('hidden');
+            document.getElementById('createAccountMedecinForm').reset();
+        }
+        // Charger les patients sans compte
+        async function loadPatientsWithoutAccount() {
+            try {
+                const response = await fetch('/api/auth/patients-without-account');
+                const result = await response.json();
+                
+                const container = document.getElementById('existingPatientsList');
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    container.innerHTML = result.data.map(patient => `
+                        <div class="bg-gray-50 rounded-xl p-4 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <span class="text-purple-600 font-bold">${(patient.prenom?.[0] || '?')}${(patient.nom?.[0] || '?')}</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">${patient.prenom || 'N/A'} ${patient.nom || 'N/A'}</h4>
+                                    <p class="text-sm text-purple-600 font-medium">📧 ${patient.email || 'Pas d\'email'}</p>
+                                    <p class="text-xs text-gray-500">📞 ${patient.telephone || 'Pas de téléphone'}</p>
+                                    <p class="text-xs text-gray-400">ID: ${patient.id}</p>
+                                </div>
+                            </div>
+                            <button onclick="openCreateAccountPatientModal(${JSON.stringify(patient).replace(/"/g, '&quot;')})" 
+                                    class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                                Créer Compte
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center py-8">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun patient sans compte</h3>
+                            <p class="mt-1 text-sm text-gray-500">Tous les patients ont déjà un compte utilisateur.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur lors du chargement des patients', 'error');
+            }
+        }
+
+        // Charger les médecins sans compte
+        async function loadMedecinsWithoutAccount() {
+            try {
+                const response = await fetch('/api/auth/medecins-without-account');
+                const result = await response.json();
+                
+                const container = document.getElementById('existingMedecinsList');
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    container.innerHTML = result.data.map(medecin => `
+                        <div class="bg-gray-50 rounded-xl p-4 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                    <span class="text-green-600 font-bold">${(medecin.prenom?.[0] || '?')}${(medecin.nom?.[0] || '?')}</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">Dr. ${medecin.prenom || 'N/A'} ${medecin.nom || 'N/A'}</h4>
+                                    <p class="text-sm text-green-600 font-medium">🏥 ${medecin.specialite || 'Spécialité non définie'}</p>
+                                    <p class="text-sm text-blue-600 font-medium">📧 ${medecin.email || 'Pas d\'email'}</p>
+                                    <p class="text-xs text-gray-500">📞 ${medecin.telephone || 'Pas de téléphone'}</p>
+                                    <p class="text-xs text-gray-400">ID: ${medecin.id}</p>
+                                </div>
+                            </div>
+                            <button onclick="openCreateAccountMedecinModal(${JSON.stringify(medecin).replace(/"/g, '&quot;')})" 
+                                    class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+                                Créer Compte
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center py-8">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun médecin sans compte</h3>
+                            <p class="mt-1 text-sm text-gray-500">Tous les médecins ont déjà un compte utilisateur.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur lors du chargement des médecins', 'error');
+            }
+        }
+
+        // Gestionnaires de formulaires
+        document.getElementById('createPatientForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isLoading) return;
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Validation côté client
+            if (!data.username || !data.password || !data.nom || !data.prenom || !data.email) {
+                showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            try {
+                const response = await fetch('/api/auth/create-patient-account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Compte patient créé avec succès', 'success');
+                    closeCreatePatientModal();
+                    await loadUsers();
+                    updateStatistics();
+                } else {
+                    showNotification(result.message || 'Erreur lors de la création', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur de connexion', 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        document.getElementById('createMedecinForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isLoading) return;
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Validation côté client
+            if (!data.username || !data.password || !data.nom || !data.prenom || !data.email || !data.specialite) {
+                showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            try {
+                const response = await fetch('/api/auth/create-medecin-account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Compte médecin créé avec succès', 'success');
+                    closeCreateMedecinModal();
+                    await loadUsers();
+                    updateStatistics();
+                } else {
+                    showNotification(result.message || 'Erreur lors de la création', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur de connexion', 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        document.getElementById('createAccountPatientForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isLoading) return;
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            if (!data.patientId || !data.username || !data.password) {
+                showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            try {
+                // Récupérer les informations du patient
+                const patientResponse = await fetch(`/api/patients/${data.patientId}`);
+                const patientResult = await patientResponse.json();
+                
+                if (!patientResult.success) {
+                    throw new Error('Patient non trouvé');
+                }
+                
+                const accountData = {
+                    patientId: data.patientId,
+                    username: data.username,
+                    password: data.password,
+                    email: patientResult.data.email
+                };
+                
+                const response = await fetch('/api/auth/create-account-existing-patient', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(accountData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`Compte créé pour le patient avec l'email: ${patientResult.data.email}`, 'success');
+                    closeCreateAccountPatientModal();
+                    closeExistingPatientsModal();
+                    await loadUsers();
+                    updateStatistics();
+                } else {
+                    showNotification(result.message || 'Erreur lors de la création', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur de connexion', 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        document.getElementById('createAccountMedecinForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isLoading) return;
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            if (!data.medecinId || !data.username || !data.password) {
+                showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            try {
+                // Récupérer les informations du médecin
+                const medecinResponse = await fetch(`/api/medecins/${data.medecinId}`);
+                const medecinResult = await medecinResponse.json();
+                
+                if (!medecinResult.success) {
+                    throw new Error('Médecin non trouvé');
+                }
+                
+                const accountData = {
+                    medecinId: data.medecinId,
+                    username: data.username,
+                    password: data.password,
+                    email: medecinResult.data.email
+                };
+                
+                const response = await fetch('/api/auth/create-account-existing-medecin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(accountData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`Compte créé pour le médecin avec l'email: ${medecinResult.data.email}`, 'success');
+                    closeCreateAccountMedecinModal();
+                    closeExistingMedecinsModal();
+                    await loadUsers();
+                    updateStatistics();
+                } else {
+                    showNotification(result.message || 'Erreur lors de la création', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur de connexion', 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // Fonction pour supprimer un utilisateur
+        async function deleteUser(userId, userName, userRole) {
+            if (isLoading) return;
+            
+            // Vérification de sécurité
+            if (userRole === 'admin') {
+                showNotification('❌ Impossible de supprimer un administrateur', 'error');
+                return;
+            }
+
+            const roleText = {
+                'medecin': 'médecin',
+                'patient': 'patient'
+            };
+
+            const confirmed = confirm(`⚠️ SUPPRESSION DE COMPTE ⚠️\n\n` +
+                `Utilisateur : ${userName}\n` +
+                `Rôle : ${roleText[userRole] || userRole}\n\n` +
+                `Cette action va supprimer :\n` +
+                `• Le compte utilisateur\n` +
+                `• Toutes les données de connexion\n` +
+                `• L'accès au système\n\n` +
+                `⚠️ Cette action est IRRÉVERSIBLE ⚠️\n\n` +
+                `Voulez-vous vraiment continuer ?`);
+            
+            if (!confirmed) return;
+
+            const doubleConfirm = prompt(`🔐 CONFIRMATION SÉCURISÉE\n\nPour confirmer la suppression du compte de "${userName}", tapez exactement :\n\nSUPPRIMER`);
+            
+            if (doubleConfirm !== 'SUPPRIMER') {
+                if (doubleConfirm !== null) {
+                    showNotification('❌ Suppression annulée - Confirmation incorrecte', 'error');
+                }
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const response = await fetch(`/api/auth/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(`✅ ${result.message}`, 'success');
+                    await loadUsers();
+                    updateStatistics();
+                } else {
+                    if (response.status === 403) {
+                        showNotification(`🔒 ${result.message}`, 'error');
+                    } else if (response.status === 404) {
+                        showNotification(`❌ Utilisateur non trouvé`, 'error');
+                    } else {
+                        showNotification(`❌ Erreur: ${result.message}`, 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur suppression utilisateur:', error);
+                showNotification('❌ Erreur de connexion lors de la suppression', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Fonction de notification améliorée
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const colors = {
+                success: 'bg-gradient-to-r from-green-500 to-green-600',
+                error: 'bg-gradient-to-r from-red-500 to-red-600',
+                info: 'bg-gradient-to-r from-blue-500 to-blue-600',
+                warning: 'bg-gradient-to-r from-orange-500 to-orange-600'
+            };
+            
+            const icons = {
+                success: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`,
+                error: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`,
+                info: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`,
+                warning: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>`
+            };
+            
+            notification.className = `fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white min-w-[320px] max-w-[500px] flex items-start gap-3 ${colors[type]} backdrop-blur-sm`;
+            notification.innerHTML = `
+                ${icons[type]}
+                <div class="flex-1">
+                    <div class="font-medium text-sm leading-relaxed">${message}</div>
+                </div>
+                <button onclick="this.parentElement.classList.add('hidden')" class="ml-2 hover:bg-white hover:bg-opacity-20 rounded-full p-1 transition-colors flex-shrink-0">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            `;
+            notification.classList.remove('hidden');
+            
+            // Auto-hide après 6 secondes
+            setTimeout(() => {
+                if (!notification.classList.contains('hidden')) {
+                    notification.classList.add('hidden');
+                }
+            }, 6000);
+        }
+
+        // Fermer les modals en cliquant à l'extérieur
+        document.addEventListener('click', function(e) {
+            const modals = [
+                'createPatientModal',
+                'createMedecinModal', 
+                'existingPatientsModal',
+                'existingMedecinsModal',
+                'createAccountPatientModal',
+                'createAccountMedecinModal',
+                'resetPasswordsModal'
+            ];
+            
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
+
+        // Gestion des touches clavier
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modals = document.querySelectorAll('[id$="Modal"]:not(.hidden)');
+                modals.forEach(modal => {
+                    modal.classList.add('hidden');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

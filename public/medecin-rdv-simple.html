@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSP - Médecin RDV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h1 class="text-3xl font-bold">Dr. Salma Hmirin</h1>
+            <p class="text-gray-600">Cardiologie</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Mes Rendez-vous</h2>
+                <button onclick="chargerRdv()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    🔄 Actualiser
+                </button>
+            </div>
+            
+            <div id="rdv-container">
+                <p class="text-gray-500">Chargement...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MEDECIN_ID = 'f8ed993a-f7fd-4e89-a66e-2cd7ca5d8391';
+        
+        document.addEventListener('DOMContentLoaded', chargerRdv);
+        
+        async function chargerRdv() {
+            const container = document.getElementById('rdv-container');
+            
+            try {
+                container.innerHTML = '<p class="text-blue-600">🔄 Chargement des rendez-vous...</p>';
+                
+                const response = await fetch('/api/rendezvous');
+                const result = await response.json();
+                
+                console.log('📊 Réponse API:', result);
+                
+                if (result.success && result.data) {
+                    // Filtrer les RDV du médecin
+                    const mesRdv = result.data.filter(rdv => 
+                        rdv.medecin && rdv.medecin.id === MEDECIN_ID
+                    );
+                    
+                    console.log(`👨‍⚕️ Mes RDV: ${mesRdv.length}`);
+                    
+                    if (mesRdv.length > 0) {
+                        // Séparer par statut
+                        const confirmes = mesRdv.filter(rdv => rdv.statut === 'Confirmé');
+                        const enAttente = mesRdv.filter(rdv => rdv.statut === 'En attente');
+                        const annules = mesRdv.filter(rdv => rdv.statut === 'Annulé');
+                        
+                        container.innerHTML = `
+                            <!-- Statistiques -->
+                            <div class="grid grid-cols-3 gap-4 mb-6">
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                                    <div class="text-2xl font-bold text-green-600">${confirmes.length}</div>
+                                    <div class="text-sm text-green-700">Confirmés</div>
+                                </div>
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                                    <div class="text-2xl font-bold text-yellow-600">${enAttente.length}</div>
+                                    <div class="text-sm text-yellow-700">En attente</div>
+                                </div>
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                                    <div class="text-2xl font-bold text-red-600">${annules.length}</div>
+                                    <div class="text-sm text-red-700">Annulés</div>
+                                </div>
+                            </div>
+                            
+                            <!-- RDV Confirmés -->
+                            ${confirmes.length > 0 ? `
+                                <div class="mb-6">
+                                    <h3 class="text-lg font-semibold mb-3 text-green-700">✅ Rendez-vous Confirmés</h3>
+                                    ${confirmes.map(rdv => creerCarteRdv(rdv, 'confirme')).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            <!-- RDV En attente -->
+                            ${enAttente.length > 0 ? `
+                                <div class="mb-6">
+                                    <h3 class="text-lg font-semibold mb-3 text-yellow-700">⏳ En attente de confirmation</h3>
+                                    ${enAttente.map(rdv => creerCarteRdv(rdv, 'attente')).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            <!-- RDV Annulés -->
+                            ${annules.length > 0 ? `
+                                <div class="mb-6">
+                                    <h3 class="text-lg font-semibold mb-3 text-red-700">❌ Rendez-vous Annulés</h3>
+                                    ${annules.map(rdv => creerCarteRdv(rdv, 'annule')).join('')}
+                                </div>
+                            ` : ''}
+                        `;
+                    } else {
+                        container.innerHTML = `
+                            <div class="text-center py-12">
+                                <div class="text-6xl mb-4">📅</div>
+                                <h3 class="text-xl font-semibold text-gray-600 mb-2">Aucun rendez-vous</h3>
+                                <p class="text-gray-500">Vos rendez-vous apparaîtront ici</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    container.innerHTML = `
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <p class="text-red-800 font-semibold">❌ Erreur de chargement</p>
+                            <p class="text-red-600">${result.error || 'Erreur inconnue'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                container.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p class="text-red-800 font-semibold">❌ Erreur de connexion</p>
+                        <p class="text-red-600">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function creerCarteRdv(rdv, type) {
+            const couleurs = {
+                'confirme': 'bg-green-50 border-green-200',
+                'attente': 'bg-yellow-50 border-yellow-200',
+                'annule': 'bg-red-50 border-red-200'
+            };
+            
+            const badges = {
+                'confirme': 'bg-green-100 text-green-800',
+                'attente': 'bg-yellow-100 text-yellow-800',
+                'annule': 'bg-red-100 text-red-800'
+            };
+            
+            const rdvDate = new Date(rdv.date);
+            const aujourd = new Date();
+            const estAujourdhui = rdvDate.toDateString() === aujourd.toDateString();
+            const estPasse = rdvDate < aujourd;
+            
+            return `
+                <div class="border rounded-lg p-4 mb-3 ${couleurs[type]}">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-lg">
+                                📅 ${rdv.date} à ${rdv.heure}
+                                ${estAujourdhui ? ' 🔥 AUJOURD\'HUI' : ''}
+                                ${estPasse ? ' (Passé)' : ''}
+                            </h4>
+                            <p class="text-gray-700 mt-1">
+                                👤 <strong>Patient:</strong> ${rdv.patient.prenom} ${rdv.patient.nom}
+                            </p>
+                            ${rdv.motif ? `<p class="text-gray-600 mt-1">📝 <strong>Motif:</strong> ${rdv.motif}</p>` : ''}
+                            
+                            <div class="mt-3 space-x-2">
+                                ${type === 'confirme' ? `
+                                    <button onclick="commencerConsultation('${rdv.patient.id}')" 
+                                            class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm hover:bg-blue-200">
+                                        🩺 Consultation
+                                    </button>
+                                ` : ''}
+                                ${type === 'attente' ? `
+                                    <button onclick="confirmerRdv('${rdv.id}')" 
+                                            class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm hover:bg-green-200">
+                                        ✅ Confirmer
+                                    </button>
+                                ` : ''}
+                                ${type !== 'annule' ? `
+                                    <button onclick="annulerRdv('${rdv.id}')" 
+                                            class="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200">
+                                        ❌ Annuler
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${badges[type]}">
+                            ${rdv.statut}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function confirmerRdv(rdvId) {
+            if (confirm('Confirmer ce rendez-vous ?')) {
+                await changerStatut(rdvId, 'Confirmé');
+            }
+        }
+        
+        async function annulerRdv(rdvId) {
+            if (confirm('Annuler ce rendez-vous ?')) {
+                await changerStatut(rdvId, 'Annulé');
+            }
+        }
+        
+        async function changerStatut(rdvId, statut) {
+            try {
+                const response = await fetch(`/api/rendezvous/${rdvId}/statut`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ statut })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`✅ Rendez-vous ${statut.toLowerCase()} avec succès`);
+                    chargerRdv(); // Recharger
+                } else {
+                    alert('❌ Erreur lors du changement de statut');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('❌ Erreur de connexion');
+            }
+        }
+        
+        function commencerConsultation(patientId) {
+            if (confirm('Ouvrir l\'interface de consultation pour ce patient ?')) {
+                window.location.href = `/consultations-medecin.html?patient=${patientId}`;
+            }
+        }
+    </script>
+</body>
+</html>
